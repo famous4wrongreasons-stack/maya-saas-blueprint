@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAYA · Админка салона</title>
+<link rel="stylesheet" href="/fonts.css">
+<style>
+/* ── MAYA admin · дом-стиль: слоистый уголь + один латунный акцент ── */
+:root{
+  --bg0:#0b0c10; --bg1:#111318; --bg2:#171a21; --bg3:#1e2230;
+  --ink:#f2f0ec; --dim:rgba(242,240,236,.60); --faint:rgba(242,240,236,.34);
+  --line:rgba(242,240,236,.10); --line2:rgba(242,240,236,.18);
+  --acc:#c2c0b8; --acc-deep:#9d9b93; --acc-ink:#15140f;
+  --ok:#34d399; --err:#e0564f;
+  --disp:'Montserrat',sans-serif; --body:'Manrope',sans-serif;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg0);color:var(--ink);font-family:var(--body);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:var(--body);font-size:14px;color:var(--ink);background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;width:100%;outline:none;transition:border-color .15s}
+input:hover,select:hover,textarea:hover{border-color:var(--line2)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var(--acc);box-shadow:0 0 0 3px rgba(194,192,184,.15)}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+textarea{resize:vertical;min-height:96px;line-height:1.55}
+label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:0 0 7px 2px}
+.hint{font-size:11.5px;color:var(--faint);margin-top:6px;line-height:1.5}
+.field{margin-bottom:18px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 22px;border:0;border-radius:12px;font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.02em;background:linear-gradient(145deg,var(--acc),var(--acc-deep));color:var(--acc-ink);transition:transform .12s,opacity .15s,box-shadow .15s;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.btn:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 18px rgba(194,192,184,.18)}
+.btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.45;cursor:default;box-shadow:none}
+.btn.ghost{background:var(--bg2);color:var(--ink);border:1px solid var(--line2);box-shadow:none}
+.btn.ghost:hover{border-color:var(--acc)}
+
+.app{display:none;height:100vh;grid-template-columns:220px minmax(0,1fr) 430px}
+@media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.preview{display:none}}
+
+/* sidebar */
+.side{background:var(--bg1);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 14px}
+.logo{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.24em;padding:0 10px 20px;color:var(--ink)}
+.logo b{color:var(--acc);font-weight:300}
+.tname{font-size:12px;color:var(--dim);padding:0 10px 18px;border-bottom:1px solid var(--line);margin-bottom:14px;line-height:1.5}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:11px 12px;color:var(--dim);font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.06em;transition:background .15s,color .15s}
+.nav-item:hover{background:var(--bg2);color:var(--ink)}
+.nav-item:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.nav-item.on{background:var(--bg2);color:var(--ink);box-shadow:inset 2px 0 0 var(--acc)}
+.side .sp{flex:1}
+.who{font-size:11px;color:var(--faint);padding:10px 12px;line-height:1.5;border-top:1px solid var(--line)}
+
+/* main */
+.main{overflow-y:auto;padding:34px 42px 60px}
+.main h1{font-family:var(--disp);font-weight:300;font-size:22px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.sub{color:var(--faint);font-size:12.5px;margin-bottom:26px}
+.card{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:22px;max-width:560px;margin-bottom:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.card h2{font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
+.actions{display:flex;gap:10px;align-items:center;max-width:560px;margin-top:4px}
+
+/* обзор */
+.kv{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv:last-child{border-bottom:0}
+.kv span:first-child{color:var(--faint)}
+.chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:var(--bg3);color:var(--dim);margin:0 4px 6px 0}
+.chip.ok{background:rgba(52,211,153,.12);color:var(--ok)}
+
+/* цвет */
+.colorbox{display:flex;gap:10px;align-items:center}
+.colorbox input[type=color]{width:46px;height:42px;padding:3px;cursor:pointer;flex-shrink:0}
+
+/* превью */
+.preview{background:var(--bg1);border-left:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:20px 18px}
+.preview .ph{font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:12px;display:flex;gap:12px;align-items:center;width:100%;justify-content:space-between}
+.preview iframe{width:390px;height:calc(100vh - 92px);border:1px solid var(--line2);border-radius:26px;background:#070810}
+.mini{background:none;border:1px solid var(--line2);border-radius:9px;color:var(--dim);font-size:11px;padding:6px 12px;font-family:var(--disp);font-weight:600;letter-spacing:.05em}
+.mini:hover{color:var(--ink);border-color:var(--acc)}
+
+/* логин */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% -10%,rgba(194,192,184,.06),transparent 55%),var(--bg0)}
+.login .box{width:380px;background:var(--bg1);border:1px solid var(--line);border-radius:18px;padding:30px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 30px 80px rgba(0,0,0,.5)}
+.login .logo{padding:0 0 4px;text-align:center}
+.login .tag{text-align:center;color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-bottom:24px}
+
+/* тосты и статусы */
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--line2);border-radius:12px;padding:12px 20px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:70vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.ok{border-color:rgba(52,211,153,.4)}
+#toast.err{border-color:rgba(224,86,79,.5)}
+.ferr{color:var(--err);font-size:12.5px;margin-top:10px;line-height:1.5;display:none}
+.skel{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--bg2),var(--bg3),var(--bg2));background-size:200% 100%;animation:sk 1.2s linear infinite;margin:10px 0}
+@keyframes sk{to{background-position:-200% 0}}
+.crm-status{font-size:12.5px;padding:12px 14px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);margin-top:14px;line-height:1.6;display:none;white-space:pre-wrap}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ЛОГИН -->
+<div class="login" id="login">
+  <div class="box">
+    <div class="logo">MA<b>Y</b>A</div>
+    <div class="tag">админка салона</div>
+    <div class="field"><label>Салон (slug)</label><input id="l-slug" placeholder="demo-salon" autocomplete="organization"></div>
+    <div class="field"><label>E-mail</label><input id="l-email" type="email" placeholder="admin@salon.ru" autocomplete="username"></div>
+    <div class="field"><label>Пароль</label><input id="l-pass" type="password" autocomplete="current-password"></div>
+    <button class="btn" id="l-btn" style="width:100%">Войти</button>
+    <div class="ferr" id="l-err"></div>
+    <div class="hint" style="margin-top:14px">Владелец платформы может войти без slug — увидит все салоны.</div>
+  </div>
+</div>
+
+<!-- ПРИЛОЖЕНИЕ -->
+<div class="app" id="app">
+  <aside class="side">
+    <div class="logo">MA<b>Y</b>A</div>
+    <div class="tname" id="s-tenant"><div class="skel" style="width:80%"></div></div>
+    <button class="nav-item on" data-view="overview">Обзор</button>
+    <button class="nav-item" data-view="brand">Бренд</button>
+    <button class="nav-item" data-view="content">Тексты</button>
+    <button class="nav-item" data-view="crm">CRM</button>
+    <div class="sp"></div>
+    <div class="who" id="s-who"></div>
+    <button class="nav-item" id="s-logout">Выйти</button>
+  </aside>
+
+  <main class="main">
+    <!-- ОБЗОР -->
+    <section data-v="overview">
+      <h1>Обзор</h1><div class="sub">Состояние салона на платформе</div>
+      <div class="card"><h2>Салон</h2><div id="ov-rows"><div class="skel"></div><div class="skel" style="width:60%"></div></div></div>
+      <div class="card"><h2>Функции тарифа</h2><div id="ov-feats"><div class="skel" style="width:70%"></div></div></div>
+    </section>
+
+    <!-- БРЕНД -->
+    <section data-v="brand" hidden>
+      <h1>Бренд</h1><div class="sub">Как приложение выглядит у ваших клиентов</div>
+      <div class="card">
+        <h2>Айдентика</h2>
+        <div class="field"><label>Название приложения</label><input id="b-name" placeholder="Название салона"></div>
+        <div class="field"><label>Логотип · URL</label><input id="b-logo" placeholder="https://…/logo.png"><div class="hint">PNG или SVG на прозрачном фоне. Загрузку файлом добавим позже.</div></div>
+        <div class="row2">
+          <div class="field"><label>Основной цвет</label><div class="colorbox"><input type="color" id="b-c1c" value="#c2c0b8"><input id="b-c1" placeholder="#c2c0b8"></div></div>
+          <div class="field"><label>Дополнительный</label><div class="colorbox"><input type="color" id="b-c2c" value="#9d9b93"><input id="b-c2" placeholder="#9d9b93"></div></div>
+        </div>
+        <div class="field" style="max-width:200px"><label>Радиус кнопок · px</label><input id="b-rad" type="number" min="0" max="32" placeholder="18"></div>
+      </div>
+      <div class="actions"><button class="btn" id="b-save">Сохранить бренд</button><span class="hint">Превью справа обновится само.</span></div>
+    </section>
+
+    <!-- ТЕКСТЫ -->
+    <section data-v="content" hidden>
+      <h1>Тексты</h1><div class="sub">Слоганы и описания — то, что читают клиенты</div>
+      <div class="card">
+        <h2>Приветствие на главной</h2>
+        <div class="field"><label>Строка-приветствие</label><input id="c-tag" placeholder="Добро пожаловать"></div>
+        <div class="field"><label>Заголовок · до 3 строк</label>
+          <div class="row3"><input id="c-h1" placeholder="Строка 1"><input id="c-h2" placeholder="Строка 2"><input id="c-h3" placeholder="Строка 3"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Цифры о салоне</h2>
+        <div class="hint" style="margin:-6px 0 12px">Пусто — блок скрыт у клиентов. Пример: «7» + «лет».</div>
+        <div id="c-stats"></div>
+      </div>
+      <div class="card">
+        <h2>О салоне</h2>
+        <div class="field"><label>Текст · абзацы через пустую строку</label><textarea id="c-about" placeholder="Расскажите о салоне…"></textarea></div>
+      </div>
+      <div class="card">
+        <h2>Оценки на картах</h2>
+        <div class="hint" style="margin:-6px 0 12px">Пусто — блок скрыт. Название площадки + оценка.</div>
+        <div class="row2" style="margin-bottom:10px"><input id="c-r1n" placeholder="Яндекс"><input id="c-r1v" placeholder="4.9"></div>
+        <div class="row2"><input id="c-r2n" placeholder="2ГИС"><input id="c-r2v" placeholder="4.8"></div>
+      </div>
+      <div class="actions"><button class="btn" id="c-save">Сохранить тексты</button></div>
+    </section>
+
+    <!-- CRM -->
+    <section data-v="crm" hidden>
+      <h1>CRM</h1><div class="sub">Откуда приложение берёт мастеров, услуги и слоты</div>
+      <div class="card">
+        <h2>Подключение</h2>
+        <div class="field"><label>Система записи</label>
+          <select id="m-prov"><option value="yclients">YClients</option><option value="altegio">Altegio</option><option value="dikidi">DIKIDI</option><option value="salon_online">Salon Online</option><option value="whitelines">Whitelines</option><option value="mock">Demo (mock)</option></select>
+        </div>
+        <div class="field"><label>API-токен</label><input id="m-token" type="password" placeholder="вставьте токен"><div class="hint">Хранится в зашифрованном виде. Уже сохранённый токен не показывается — оставьте пустым, чтобы не менять.</div></div>
+        <div class="row2">
+          <div class="field"><label>ID компании</label><input id="m-company" placeholder="503759"></div>
+          <div class="field"><label>Base URL · опционально</label><input id="m-base" placeholder="по умолчанию"></div>
+        </div>
+        <div class="crm-status" id="m-status"></div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="m-save">Сохранить CRM</button>
+        <button class="btn ghost" id="m-test">Проверить связь</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ПРЕВЬЮ -->
+  <aside class="preview">
+    <div class="ph"><span>Превью клиента</span><button class="mini" id="p-reload">Обновить</button></div>
+    <iframe id="p-frame" title="Превью приложения клиента"></iframe>
+  </aside>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  'use strict';
+  var qs = new URLSearchParams(location.search);
+  var API = (qs.get('api') || localStorage.getItem('maya_admin_api') || 'http://localhost:3000/api').replace(/\/+$/, '');
+  var APP = qs.get('app') || localStorage.getItem('maya_admin_app') || (location.origin + '/app.html');
+  try { localStorage.setItem('maya_admin_api', API); localStorage.setItem('maya_admin_app', APP); } catch (e) {}
+
+  var S = { token: null, user: null, tenant: null, themeJson: {} };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function toast(msg, kind) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.className = 'show' + (kind ? ' ' + kind : '');
+    clearTimeout(t._h);
+    t._h = setTimeout(function () { t.className = ''; }, 3200);
+  }
+
+  async function api(method, path, body) {
+    var r = await fetch(API + path, {
+      method: method,
+      headers: Object.assign({ 'Content-Type': 'application/json' },
+        S.token ? { Authorization: 'Bearer ' + S.token } : {}),
+      body: body != null ? JSON.stringify(body) : undefined
+    });
+    var text = await r.text();
+    var data = null;
+    try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
+    if (!r.ok) {
+      var eobj = data && typeof data === 'object' ? data.error : null;
+      var msg = (eobj && eobj.message) || (data && data.message) || ('HTTP ' + r.status);
+      var err = new Error(Array.isArray(msg) ? msg.join('; ') : msg);
+      err.status = r.status;
+      throw err;
+    }
+    return data;
+  }
+
+  function busy(btn, on, txt) {
+    btn.disabled = on;
+    if (on) { btn._t = btn.textContent; btn.textContent = txt || 'Сохраняю…'; }
+    else if (btn._t) btn.textContent = btn._t;
+  }
+
+  /* ── логин ── */
+  $('l-btn').addEventListener('click', doLogin);
+  ['l-slug', 'l-email', 'l-pass'].forEach(function (id) {
+    $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+  });
+  async function doLogin() {
+    var err = $('l-err'); err.style.display = 'none';
+    var body = { email: $('l-email').value.trim(), password: $('l-pass').value };
+    var slug = $('l-slug').value.trim();
+    if (slug) body.tenantSlug = slug;
+    if (!body.email || !body.password) { err.textContent = 'Заполните e-mail и пароль.'; err.style.display = 'block'; return; }
+    busy($('l-btn'), true, 'Входим…');
+    try {
+      var res = await api('POST', '/auth/login', body);
+      S.token = res.access_token;
+      S.user = res.user || {};
+      var tid = S.user.tenant_id || S.user.tenantId || null;
+      if (!tid && S.user.role === 'platform_owner') {
+        var list = await api('GET', '/admin/tenants');
+        var items = Array.isArray(list) ? list : (list.items || list.tenants || []);
+        if (slug) { var hit = items.filter(function (t) { return t.slug === slug; })[0]; tid = hit && hit.id; }
+        if (!tid && items.length) tid = items[0].id;
+      }
+      if (!tid) throw new Error('Не удалось определить салон для этого пользователя');
+      await enter(tid);
+    } catch (e) {
+      err.textContent = e.message || 'Не удалось войти';
+      err.style.display = 'block';
+    } finally { busy($('l-btn'), false); }
+  }
+
+  async function enter(tid) {
+    S.tid = tid;
+    $('login').style.display = 'none';
+    $('app').style.display = 'grid';
+    $('s-who').textContent = (S.user.email || '') + ' · ' + (S.user.role === 'platform_owner' ? 'владелец платформы' : 'администратор салона');
+    await loadTenant();
+    reloadPreview();
+  }
+
+  $('s-logout').addEventListener('click', function () { location.reload(); });
+
+  /* ── данные тенанта ── */
+  async function loadTenant() {
+    var t = await api('GET', '/admin/tenants/' + S.tid);
+    S.tenant = t;
+    var b = t.branding || {};
+    S.themeJson = (b.theme_json && typeof b.theme_json === 'object') ? b.theme_json : {};
+    $('s-tenant').textContent = (t.name || t.slug) + ' · ' + t.slug;
+
+    /* обзор */
+    var st = t.status || '—';
+    $('ov-rows').innerHTML =
+      kv('Название', esc(t.name || '—')) +
+      kv('Slug (адрес)', esc(t.slug || '—')) +
+      kv('Статус', '<span class="chip' + (st === 'active' || st === 'trial' ? ' ok' : '') + '">' + esc(st) + '</span>') +
+      kv('Тариф', esc((t.plan && (t.plan.name || t.plan.id)) || t.plan_id || '—')) +
+      kv('Филиалов', String(t.branch_count != null ? t.branch_count : (t.branches || []).length)) +
+      kv('Пользователей', String(t.user_count != null ? t.user_count : '—'));
+    var feats = (t.plan && t.plan.featuresJson) || {};
+    var keys = Object.keys(feats).filter(function (k) { return feats[k]; });
+    $('ov-feats').innerHTML = keys.length
+      ? keys.map(function (k) { return '<span class="chip ok">' + esc(k) + '</span>'; }).join('')
+      : '<span class="hint">Функции тарифа не настроены.</span>';
+
+    /* бренд */
+    $('b-name').value = b.app_name || '';
+    $('b-logo').value = b.logo_url || '';
+    setColor('b-c1', b.primary_color || '');
+    setColor('b-c2', b.secondary_color || '');
+    $('b-rad').value = b.button_radius != null ? b.button_radius : '';
+
+    /* тексты */
+    var ct = (S.themeJson && S.themeJson.content) || {};
+    $('c-tag').value = ct.hero_tag || '';
+    var ht = ct.hero_title || [];
+    $('c-h1').value = ht[0] || ''; $('c-h2').value = ht[1] || ''; $('c-h3').value = ht[2] || '';
+    renderStats(ct.stats || []);
+    $('c-about').value = (ct.about || []).join('\n\n');
+    var rt = ct.ratings || [];
+    $('c-r1n').value = (rt[0] || [])[0] || ''; $('c-r1v').value = (rt[0] || [])[1] || '';
+    $('c-r2n').value = (rt[1] || [])[0] || ''; $('c-r2v').value = (rt[1] || [])[1] || '';
+
+    /* CRM */
+    var crm = t.crm_integration || null;
+    if (crm) {
+      $('m-prov').value = crm.provider || 'yclients';
+      $('m-base').value = crm.base_url || crm.baseUrl || '';
+      var sj = crm.settings_json || crm.settingsJson || {};
+      $('m-company').value = sj.companyId != null ? sj.companyId : '';
+      crmStatus('Подключено: ' + (crm.provider || '') + ' · статус ' + (crm.status || '—'), true);
+    }
+  }
+  function kv(k, v) { return '<div class="kv"><span>' + k + '</span><span>' + v + '</span></div>'; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  /* ── бренд ── */
+  function setColor(id, val) {
+    $(id).value = val || '';
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) $(id + 'c').value = val;
+  }
+  ['b-c1', 'b-c2'].forEach(function (id) {
+    $(id + 'c').addEventListener('input', function () { $(id).value = this.value; });
+    $(id).addEventListener('input', function () { if (/^#[0-9a-fA-F]{6}$/.test(this.value)) $(id + 'c').value = this.value; });
+  });
+  $('b-save').addEventListener('click', async function () {
+    var body = {};
+    var nm = $('b-name').value.trim(); if (nm) body.appName = nm;
+    body.logoUrl = $('b-logo').value.trim() || null;
+    var c1 = $('b-c1').value.trim(), c2 = $('b-c2').value.trim();
+    if (c1 && !/^#[0-9a-fA-F]{6}$/.test(c1)) return toast('Основной цвет: нужен hex вида #aabbcc', 'err');
+    if (c2 && !/^#[0-9a-fA-F]{6}$/.test(c2)) return toast('Дополнительный цвет: нужен hex вида #aabbcc', 'err');
+    if (c1) body.primaryColor = c1;
+    if (c2) body.secondaryColor = c2;
+    var rad = parseInt($('b-rad').value, 10);
+    if (!isNaN(rad)) body.buttonRadius = rad;
+    busy(this, true);
+    try {
+      await api('PATCH', '/admin/tenants/' + S.tid + '/branding', body);
+      toast('Бренд сохранён', 'ok');
+      await loadTenant(); reloadPreview();
+    } catch (e) { toast(e.message, 'err'); }
+    finally { busy(this, false); }
+  });
+
+  /* ── тексты ── */
+  var statRows = [];
+  function renderStats(pairs) {
+    statRows = [];
+    var host = $('c-stats');
+    host.innerHTML = '';
+    for (var i = 0; i < 4; i++) {
+      var p = pairs[i] || ['', ''];
+      var row = document.createElement('div');
+      row.className = 'row2'; row.style.marginBottom = '10px';
+      row.innerHTML = '<input placeholder="Значение · 7" value="' + esc(p[0]) + '"><input placeholder="Подпись · лет" value="' + esc(p[1]) + '">';
+      host.appendChild(row);
+      statRows.push(row);
+    }
+  }
+  $('c-save').addEventListener('click', async function () {
+    var ct = {};
+    var tag = $('c-tag').value.trim(); if (tag) ct.hero_tag = tag;
+    var ht = [$('c-h1').value, $('c-h2').value, $('c-h3').value].map(function (s) { return s.trim(); }).filter(Boolean);
+    if (ht.length) ct.hero_title = ht;
+    var stats = statRows.map(function (r) {
+      var i = r.querySelectorAll('input');
+      return [i[0].value.trim(), i[1].value.trim()];
+    }).filter(function (p) { return p[0] && p[1]; });
+    if (stats.length) ct.stats = stats;
+    var about = $('c-about').value.split(/\n\s*\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (about.length) ct.about = about;
+    var ratings = [[$('c-r1n').value.trim(), $('c-r1v').value.trim()], [$('c-r2n').value.trim(), $('c-r2v').value.trim()]]
+      .filter(function (p) { return p[0] && p[1]; });
+    if (ratings.length) ct.ratings = ratings;
+    var themeJson = Object.assign({}, S.themeJson, { content: ct });
+    busy(this, true);
+    try {
+      await api('PATCH', '/admin/tenants/' + S.tid + '/branding', { themeJson: themeJson });
+      toast('Тексты сохранены', 'ok');
+      await loadTenant(); reloadPreview();
+    } catch (e) { toast(e.message, 'err'); }
+    finally { busy(this, false); }
+  });
+
+  /* ── CRM ── */
+  function crmStatus(text, ok) {
+    var el = $('m-status');
+    el.style.display = 'block';
+    el.style.borderColor = ok ? 'rgba(52,211,153,.4)' : 'rgba(224,86,79,.5)';
+    el.textContent = text;
+  }
+  $('m-save').addEventListener('click', async function () {
+    var body = { provider: $('m-prov').value };
+    var tokenV = $('m-token').value.trim(); if (tokenV) body.apiToken = tokenV;
+    var baseV = $('m-base').value.trim(); if (baseV) body.baseUrl = baseV;
+    var comp = $('m-company').value.trim();
+    var sj = {};
+    if (comp) sj.companyId = isNaN(Number(comp)) ? comp : Number(comp);
+    if (Object.keys(sj).length) body.settingsJson = sj;
+    busy(this, true);
+    try {
+      // PATCH существующего; если интеграции ещё нет (404) — создаём POST'ом
+      try {
+        await api('PATCH', '/admin/tenants/' + S.tid + '/crm', body);
+      } catch (e1) {
+        if (e1.status !== 404) throw e1;
+        if (!tokenV && body.provider !== 'mock') throw new Error('Для нового подключения нужен API-токен');
+        await api('POST', '/admin/tenants/' + S.tid + '/crm', body);
+      }
+      toast('CRM сохранена', 'ok');
+      $('m-token').value = '';
+      await loadTenant(); reloadPreview();
+    } catch (e) { toast(e.message, 'err'); }
+    finally { busy(this, false); }
+  });
+  $('m-test').addEventListener('click', async function () {
+    busy(this, true, 'Проверяем…');
+    try {
+      var r = await api('POST', '/admin/tenants/' + S.tid + '/test-crm');
+      var parts = [];
+      if (r && typeof r === 'object') {
+        if (r.ok != null) parts.push(r.ok ? 'Связь установлена ✓' : 'Связь не установлена');
+        if (r.provider) parts.push('провайдер: ' + r.provider);
+        if (r.staff_count != null) parts.push('мастеров: ' + r.staff_count);
+        if (r.services_count != null) parts.push('услуг: ' + r.services_count);
+        if (r.message) parts.push(String(r.message));
+        if (!parts.length) parts.push(JSON.stringify(r));
+      }
+      crmStatus(parts.join(' · '), !(r && r.ok === false));
+      toast('Проверка выполнена', 'ok');
+    } catch (e) { crmStatus('Ошибка: ' + e.message, false); toast(e.message, 'err'); }
+    finally { busy(this, false); }
+  });
+
+  /* ── превью ── */
+  function previewUrl() {
+    var slug = S.tenant && S.tenant.slug;
+    return APP + '?booking_backend=saas-local&booking_api_base=' + encodeURIComponent(API) + '&booking_tenant=' + encodeURIComponent(slug || '');
+  }
+  function reloadPreview() {
+    var f = $('p-frame');
+    if (f) f.src = previewUrl() + '&_=' + Date.now();
+  }
+  $('p-reload').addEventListener('click', reloadPreview);
+
+  /* ── навигация ── */
+  document.querySelectorAll('.nav-item[data-view]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.nav-item[data-view]').forEach(function (x) { x.classList.toggle('on', x === b); });
+      document.querySelectorAll('section[data-v]').forEach(function (s) { s.hidden = s.getAttribute('data-v') !== b.getAttribute('data-view'); });
+    });
+  });
+
+  renderStats([]);
+})();
+</script>
+</body>
+</html>
