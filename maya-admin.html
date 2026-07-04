@@ -95,6 +95,16 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
 .skel{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--bg2),var(--bg3),var(--bg2));background-size:200% 100%;animation:sk 1.2s linear infinite;margin:10px 0}
 @keyframes sk{to{background-position:-200% 0}}
 .crm-status{font-size:12.5px;padding:12px 14px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);margin-top:14px;line-height:1.6;display:none;white-space:pre-wrap}
+/* визард онбординга */
+.steps{display:flex;gap:8px;margin-bottom:22px;max-width:560px}
+.step{flex:1;height:4px;border-radius:2px;background:var(--bg3);transition:background .2s}
+.step.on{background:var(--acc)}
+.wiz-nav{display:flex;gap:10px;max-width:560px;margin-top:4px}
+.wiz-nav .sp{flex:1}
+.done-box{max-width:560px;background:var(--bg1);border:1px solid rgba(52,211,153,.35);border-radius:var(--r);padding:26px;text-align:center}
+.done-box .big{font-family:var(--disp);font-weight:300;font-size:19px;letter-spacing:.04em;text-transform:uppercase;margin:10px 0 6px}
+.done-box code{display:inline-block;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:12px;margin-top:10px;user-select:all;word-break:break-all}
+.wiz-log{font-size:12.5px;color:var(--dim);line-height:1.9;margin-top:14px;text-align:left}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -123,6 +133,7 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     <button class="nav-item" data-view="brand">Бренд</button>
     <button class="nav-item" data-view="content">Тексты</button>
     <button class="nav-item" data-view="crm">CRM</button>
+    <button class="nav-item" data-view="wizard" id="nav-wizard" hidden>＋ Новый салон</button>
     <div class="sp"></div>
     <div class="who" id="s-who"></div>
     <button class="nav-item" id="s-logout">Выйти</button>
@@ -199,6 +210,76 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
         <button class="btn" id="m-save">Сохранить CRM</button>
         <button class="btn ghost" id="m-test">Проверить связь</button>
       </div>
+    </section>
+    <!-- ВИЗАРД: НОВЫЙ САЛОН -->
+    <section data-v="wizard" hidden>
+      <h1>Новый салон</h1><div class="sub">Четыре шага — и у салона есть своё приложение</div>
+      <div class="steps"><div class="step on"></div><div class="step"></div><div class="step"></div><div class="step"></div></div>
+
+      <div data-ws="0">
+        <div class="card">
+          <h2>Шаг 1 · Основное</h2>
+          <div class="field"><label>Название салона</label><input id="w-name" placeholder="Барбершоп «Грива»"></div>
+          <div class="field"><label>Адрес приложения (slug)</label><input id="w-slug" placeholder="griva"><div class="hint">Латиница и дефисы. Это будет ссылка салона.</div></div>
+        </div>
+      </div>
+
+      <div data-ws="1" hidden>
+        <div class="card">
+          <h2>Шаг 2 · Бренд</h2>
+          <div class="field"><label>Логотип · URL · опционально</label><input id="w-logo" placeholder="https://…/logo.png"></div>
+          <div class="row2">
+            <div class="field"><label>Основной цвет</label><div class="colorbox"><input type="color" id="w-c1c" value="#c2c0b8"><input id="w-c1" value="#c2c0b8"></div></div>
+            <div class="field"><label>Дополнительный</label><div class="colorbox"><input type="color" id="w-c2c" value="#9d9b93"><input id="w-c2" value="#9d9b93"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div data-ws="2" hidden>
+        <div class="card">
+          <h2>Шаг 3 · Тексты</h2>
+          <div class="field"><label>Приветствие</label><input id="w-tag" placeholder="Добро пожаловать"></div>
+          <div class="field"><label>Заголовок · до 3 строк</label>
+            <div class="row3"><input id="w-h1" placeholder="Строка 1"><input id="w-h2" placeholder="Строка 2"><input id="w-h3" placeholder="Строка 3"></div>
+            <div class="hint">Пусто — клиенты увидят нейтральный текст, его можно поменять позже.</div>
+          </div>
+          <div class="field"><label>О салоне · один-два абзаца</label><textarea id="w-about" placeholder="Пара честных предложений о салоне…"></textarea></div>
+        </div>
+      </div>
+
+      <div data-ws="3" hidden>
+        <div class="card">
+          <h2>Шаг 4 · Система записи</h2>
+          <div class="field"><label>CRM</label>
+            <select id="w-prov"><option value="mock">Demo-данные (подключить CRM позже)</option><option value="yclients">YClients</option><option value="altegio">Altegio</option><option value="dikidi">DIKIDI</option></select>
+          </div>
+          <div class="row2" id="w-crmrow" style="display:none">
+            <div class="field"><label>API-токен</label><input id="w-token" type="password" placeholder="токен"></div>
+            <div class="field"><label>ID компании</label><input id="w-company" placeholder="503759"></div>
+          </div>
+          <div class="hint">Demo-данные позволяют показать салону готовое приложение до подключения его CRM.</div>
+        </div>
+      </div>
+
+      <div data-ws="4" hidden>
+        <div class="done-box">
+          <div style="font-size:30px">✦</div>
+          <div class="big">Салон создан</div>
+          <div class="hint" id="w-done-name"></div>
+          <code id="w-done-link"></code>
+          <div class="wiz-log" id="w-log"></div>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:18px">
+            <button class="btn" id="w-open">Открыть в админке</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="wiz-nav" id="w-nav">
+        <button class="btn ghost" id="w-back" disabled>Назад</button>
+        <div class="sp"></div>
+        <button class="btn" id="w-next">Далее</button>
+      </div>
+      <div class="ferr" id="w-err" style="max-width:560px"></div>
     </section>
   </main>
 
@@ -292,6 +373,7 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     $('login').style.display = 'none';
     $('app').style.display = 'grid';
     $('s-who').textContent = (S.user.email || '') + ' · ' + (S.user.role === 'platform_owner' ? 'владелец платформы' : 'администратор салона');
+    if (S.user.role === 'platform_owner') $('nav-wizard').hidden = false;
     await loadTenant();
     reloadPreview();
   }
@@ -481,6 +563,123 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     if (f) f.src = previewUrl() + '&_=' + Date.now();
   }
   $('p-reload').addEventListener('click', reloadPreview);
+
+  /* ── визард онбординга (только владелец платформы) ── */
+  var W = { step: 0, tid: null, slug: null };
+  function wShow(n) {
+    W.step = n;
+    document.querySelectorAll('[data-ws]').forEach(function (el) {
+      el.hidden = el.getAttribute('data-ws') !== String(n);
+    });
+    document.querySelectorAll('.steps .step').forEach(function (el, i) {
+      el.classList.toggle('on', i <= Math.min(n, 3));
+    });
+    $('w-back').disabled = n === 0 || n === 4;
+    $('w-next').textContent = n === 3 ? 'Создать салон' : 'Далее';
+    $('w-nav').style.display = n === 4 ? 'none' : 'flex';
+    $('w-err').style.display = 'none';
+  }
+  function translit(str) {
+    var map = { а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'i',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'c',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya' };
+    return String(str || '').toLowerCase().split('').map(function (ch) {
+      return map[ch] != null ? map[ch] : ch;
+    }).join('').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+  }
+  $('w-name').addEventListener('input', function () {
+    if (!$('w-slug')._touched) $('w-slug').value = translit(this.value);
+  });
+  $('w-slug').addEventListener('input', function () { this._touched = true; });
+  ['w-c1', 'w-c2'].forEach(function (id) {
+    $(id + 'c').addEventListener('input', function () { $(id).value = this.value; });
+    $(id).addEventListener('input', function () { if (/^#[0-9a-fA-F]{6}$/.test(this.value)) $(id + 'c').value = this.value; });
+  });
+  $('w-prov').addEventListener('change', function () {
+    $('w-crmrow').style.display = this.value === 'mock' ? 'none' : 'grid';
+  });
+  $('w-back').addEventListener('click', function () { if (W.step > 0) wShow(W.step - 1); });
+  $('w-next').addEventListener('click', async function () {
+    var err = $('w-err'); err.style.display = 'none';
+    if (W.step === 0) {
+      var nm = $('w-name').value.trim(), sl = $('w-slug').value.trim();
+      if (!nm) { err.textContent = 'Введите название салона.'; err.style.display = 'block'; return; }
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(sl)) { err.textContent = 'Slug: строчная латиница, цифры и дефисы.'; err.style.display = 'block'; return; }
+      return wShow(1);
+    }
+    if (W.step === 1) {
+      var c1 = $('w-c1').value.trim(), c2 = $('w-c2').value.trim();
+      if (c1 && !/^#[0-9a-fA-F]{6}$/.test(c1)) { err.textContent = 'Основной цвет: hex вида #aabbcc.'; err.style.display = 'block'; return; }
+      if (c2 && !/^#[0-9a-fA-F]{6}$/.test(c2)) { err.textContent = 'Дополнительный цвет: hex вида #aabbcc.'; err.style.display = 'block'; return; }
+      return wShow(2);
+    }
+    if (W.step === 2) return wShow(3);
+    if (W.step === 3) return wCreate(this);
+  });
+  async function wCreate(btn) {
+    var err = $('w-err');
+    var prov = $('w-prov').value;
+    if (prov !== 'mock' && !$('w-token').value.trim()) {
+      err.textContent = 'Для ' + prov + ' нужен API-токен (или выберите Demo-данные).';
+      err.style.display = 'block'; return;
+    }
+    busy(btn, true, 'Создаём…');
+    var log = [];
+    function step(t) { log.push('✓ ' + t); }
+    try {
+      /* 1. тенант (если упало на позднем шаге и жмут повторно — не дублируем) */
+      if (!W.tid) {
+        var t = await api('POST', '/admin/tenants', { name: $('w-name').value.trim(), slug: $('w-slug').value.trim() });
+        W.tid = t.id; W.slug = t.slug;
+        step('Салон зарегистрирован (' + t.slug + ')');
+      } else step('Салон уже создан — продолжаем');
+      /* 2. бренд + тексты одним PATCH */
+      var content = {};
+      var tag = $('w-tag').value.trim(); if (tag) content.hero_tag = tag;
+      var ht = [$('w-h1').value, $('w-h2').value, $('w-h3').value].map(function (x) { return x.trim(); }).filter(Boolean);
+      if (ht.length) content.hero_title = ht;
+      var about = $('w-about').value.split(/\n\s*\n/).map(function (x) { return x.trim(); }).filter(Boolean);
+      if (about.length) content.about = about;
+      var bBody = { appName: $('w-name').value.trim(), themeJson: { content: content } };
+      var lg = $('w-logo').value.trim(); if (lg) bBody.logoUrl = lg;
+      if ($('w-c1').value.trim()) bBody.primaryColor = $('w-c1').value.trim();
+      if ($('w-c2').value.trim()) bBody.secondaryColor = $('w-c2').value.trim();
+      await api('PATCH', '/admin/tenants/' + W.tid + '/branding', bBody);
+      step('Бренд и тексты сохранены');
+      /* 3. CRM */
+      var cBody = { provider: prov };
+      var tk = $('w-token').value.trim(); if (tk) cBody.apiToken = tk;
+      var cp = $('w-company').value.trim();
+      if (cp) cBody.settingsJson = { companyId: isNaN(Number(cp)) ? cp : Number(cp) };
+      try {
+        await api('PATCH', '/admin/tenants/' + W.tid + '/crm', cBody);
+      } catch (e1) {
+        if (e1.status !== 404) throw e1;
+        await api('POST', '/admin/tenants/' + W.tid + '/crm', cBody);
+      }
+      step('Система записи: ' + (prov === 'mock' ? 'demo-данные' : prov));
+      try {
+        var tr = await api('POST', '/admin/tenants/' + W.tid + '/test-crm');
+        step('Проверка связи: ' + (tr && tr.ok ? 'ок' : 'не прошла — проверьте токен в разделе CRM'));
+      } catch (e2) { step('Проверка связи не прошла: ' + e2.message); }
+      /* финал */
+      $('w-done-name').textContent = $('w-name').value.trim();
+      $('w-done-link').textContent = APP + '?booking_backend=saas-local&booking_api_base=' + API + '&booking_tenant=' + W.slug;
+      $('w-log').innerHTML = log.map(esc).join('<br>');
+      wShow(4);
+    } catch (e) {
+      err.textContent = e.message || 'Не получилось — попробуйте ещё раз';
+      err.style.display = 'block';
+      if (log.length) { $('w-log').innerHTML = log.map(esc).join('<br>'); }
+    } finally { busy(btn, false); }
+  }
+  $('w-open').addEventListener('click', async function () {
+    if (!W.tid) return;
+    S.tid = W.tid;
+    await loadTenant(); reloadPreview();
+    document.querySelector('.nav-item[data-view="overview"]').click();
+    W.tid = null; W.slug = null; wShow(0);
+    ['w-name','w-slug','w-tag','w-h1','w-h2','w-h3','w-about','w-logo','w-token','w-company'].forEach(function (id) { $(id).value = ''; });
+    $('w-slug')._touched = false;
+  });
 
   /* ── навигация ── */
   document.querySelectorAll('.nav-item[data-view]').forEach(function (b) {
