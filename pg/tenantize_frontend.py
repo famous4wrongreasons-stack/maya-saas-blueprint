@@ -194,6 +194,11 @@ def main() -> int:
     for desc, old, new, expect in build_replacements():
         n = s.count(old)
         if n != expect:
+            # 2026-07-04: часть замен встроена прямо в исходник app.html
+            # (safe-mode фикс входного экрана) — считаем применённой.
+            if n == 0 and new in s:
+                print(f"• {desc}: уже в исходнике — пропускаю")
+                continue
             print(f"✗ СТОП: «{desc}» — найдено {n}, ожидалось {expect}.\n"
                   f"  app.html изменился; обновите якорь в tenantize_frontend.py.")
             return 1
