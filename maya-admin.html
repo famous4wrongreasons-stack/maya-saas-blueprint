@@ -221,6 +221,26 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
           <h2>Шаг 1 · Основное</h2>
           <div class="field"><label>Название салона</label><input id="w-name" placeholder="Барбершоп «Грива»"></div>
           <div class="field"><label>Адрес приложения (slug)</label><input id="w-slug" placeholder="griva"><div class="hint">Латиница и дефисы. Это будет ссылка салона.</div></div>
+          <div class="field"><label>Тариф</label><select id="w-plan"><option value="">Без тарифа · настроить позже</option></select></div>
+          <div class="row2">
+            <div class="field"><label>Адрес салона · опц.</label><input id="w-addr" placeholder="Краснодар, Красная 15"></div>
+            <div class="field"><label>Телефон салона · опц.</label><input id="w-phone" placeholder="+7 (900) 000-00-00"></div>
+          </div>
+          <div class="field" style="max-width:300px"><label>Часовой пояс</label>
+            <select id="w-tz">
+              <option value="Europe/Kaliningrad">Калининград · МСК−1</option>
+              <option value="Europe/Moscow" selected>Москва · МСК</option>
+              <option value="Europe/Samara">Самара · МСК+1</option>
+              <option value="Asia/Yekaterinburg">Екатеринбург · МСК+2</option>
+              <option value="Asia/Omsk">Омск · МСК+3</option>
+              <option value="Asia/Novosibirsk">Новосибирск · МСК+4</option>
+              <option value="Asia/Krasnoyarsk">Красноярск · МСК+4</option>
+              <option value="Asia/Irkutsk">Иркутск · МСК+5</option>
+              <option value="Asia/Yakutsk">Якутск · МСК+6</option>
+              <option value="Asia/Vladivostok">Владивосток · МСК+7</option>
+              <option value="Asia/Kamchatka">Камчатка · МСК+9</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -259,6 +279,14 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
           </div>
           <div class="hint">Demo-данные позволяют показать салону готовое приложение до подключения его CRM.</div>
         </div>
+        <div class="card">
+          <h2>Доступ владельцу салона · опционально</h2>
+          <div class="row2">
+            <div class="field"><label>E-mail владельца</label><input id="w-aemail" type="email" placeholder="owner@salon.ru"></div>
+            <div class="field"><label>Имя</label><input id="w-aname" placeholder="Имя"></div>
+          </div>
+          <div class="hint">Создадим аккаунт администратора салона — пароль сгенерируется и покажется один раз на следующем экране.</div>
+        </div>
       </div>
 
       <div data-ws="4" hidden>
@@ -267,6 +295,10 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
           <div class="big">Салон создан</div>
           <div class="hint" id="w-done-name"></div>
           <code id="w-done-link"></code>
+          <div id="w-creds" hidden style="margin-top:16px;padding:14px;border:1px dashed var(--line2);border-radius:12px;text-align:left">
+            <div style="font-family:var(--disp);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ok);margin-bottom:8px">Доступ владельца · показывается один раз</div>
+            <div style="font-size:13px;line-height:1.9" id="w-creds-body"></div>
+          </div>
           <div class="wiz-log" id="w-log"></div>
           <div style="display:flex;gap:10px;justify-content:center;margin-top:18px">
             <button class="btn" id="w-open">Открыть в админке</button>
@@ -514,7 +546,6 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     var body = { provider: $('m-prov').value };
     var tokenV = $('m-token').value.trim(); if (tokenV) body.apiToken = tokenV;
     var baseV = $('m-base').value.trim(); if (baseV) body.baseUrl = baseV;
-    if (body.provider === 'mock' && !body.apiToken) body.apiToken = 'mock'; // DTO требует токен даже для demo
     var comp = $('m-company').value.trim();
     var sj = {};
     if (comp) sj.companyId = isNaN(Number(comp)) ? comp : Number(comp);
@@ -566,7 +597,23 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
   $('p-reload').addEventListener('click', reloadPreview);
 
   /* ── визард онбординга (только владелец платформы) ── */
-  var W = { step: 0, tid: null, slug: null };
+  var W = { step: 0, tid: null, slug: null, plansLoaded: false };
+  async function wLoadPlans() {
+    if (W.plansLoaded) return;
+    try {
+      var l = await api('GET', '/admin/plans');
+      var items = Array.isArray(l) ? l : (l.items || []);
+      var sel = $('w-plan');
+      items.forEach(function (p) {
+        var o = document.createElement('option');
+        o.value = p.id;
+        var price = p.price_monthly != null ? p.price_monthly : p.priceMonthly;
+        o.textContent = (p.name || p.id) + (price != null ? ' · ' + Number(price).toLocaleString('ru-RU') + ' ₽/мес' : '');
+        sel.appendChild(o);
+      });
+      W.plansLoaded = true;
+    } catch (e) { /* без списка планов визард всё равно работает */ }
+  }
   function wShow(n) {
     W.step = n;
     document.querySelectorAll('[data-ws]').forEach(function (el) {
@@ -628,7 +675,13 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     try {
       /* 1. тенант (если упало на позднем шаге и жмут повторно — не дублируем) */
       if (!W.tid) {
-        var t = await api('POST', '/admin/tenants', { name: $('w-name').value.trim(), slug: $('w-slug').value.trim() });
+        var cr = { name: $('w-name').value.trim(), slug: $('w-slug').value.trim() };
+        if ($('w-plan').value) cr.planId = $('w-plan').value;
+        cr.branchName = cr.name;
+        var wa = $('w-addr').value.trim(); if (wa) cr.branchAddress = wa;
+        var wp = $('w-phone').value.trim(); if (wp) cr.branchPhone = wp;
+        cr.branchTimezone = $('w-tz').value || 'Europe/Moscow';
+        var t = await api('POST', '/admin/tenants', cr);
         W.tid = t.id; W.slug = t.slug;
         step('Салон зарегистрирован (' + t.slug + ')');
       } else step('Салон уже создан — продолжаем');
@@ -648,7 +701,6 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
       /* 3. CRM */
       var cBody = { provider: prov };
       var tk = $('w-token').value.trim(); if (tk) cBody.apiToken = tk;
-      if (prov === 'mock' && !cBody.apiToken) cBody.apiToken = 'mock';
       var cp = $('w-company').value.trim();
       if (cp) cBody.settingsJson = { companyId: isNaN(Number(cp)) ? cp : Number(cp) };
       try {
@@ -662,6 +714,22 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
         var tr = await api('POST', '/admin/tenants/' + W.tid + '/test-crm');
         step('Проверка связи: ' + (tr && tr.ok ? 'ок' : 'не прошла — проверьте токен в разделе CRM'));
       } catch (e2) { step('Проверка связи не прошла: ' + e2.message); }
+      /* аккаунт владельца салона */
+      var aem = $('w-aemail').value.trim();
+      $('w-creds').hidden = true;
+      if (aem) {
+        try {
+          var ubody = { email: aem, role: 'tenant_admin' };
+          var an = $('w-aname').value.trim(); if (an) ubody.name = an;
+          var u = await api('POST', '/admin/tenants/' + W.tid + '/users', ubody);
+          step('Аккаунт владельца создан: ' + aem);
+          var tp = u && (u.temporary_password || u.temporaryPassword);
+          $('w-creds-body').innerHTML = 'Вход в админку: <b>' + esc(aem) + '</b>' +
+            (tp ? '<br>Временный пароль: <b>' + esc(tp) + '</b>' : '<br>Пароль задан заранее.') +
+            '<br>Салон (slug): <b>' + esc(W.slug) + '</b>';
+          $('w-creds').hidden = false;
+        } catch (e3) { step('Аккаунт владельца не создан: ' + e3.message); }
+      }
       /* финал */
       $('w-done-name').textContent = $('w-name').value.trim();
       $('w-done-link').textContent = APP + '?booking_backend=saas-local&booking_api_base=' + API + '&booking_tenant=' + W.slug;
@@ -679,13 +747,15 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     await loadTenant(); reloadPreview();
     document.querySelector('.nav-item[data-view="overview"]').click();
     W.tid = null; W.slug = null; wShow(0);
-    ['w-name','w-slug','w-tag','w-h1','w-h2','w-h3','w-about','w-logo','w-token','w-company'].forEach(function (id) { $(id).value = ''; });
+    ['w-name','w-slug','w-tag','w-h1','w-h2','w-h3','w-about','w-logo','w-token','w-company','w-addr','w-phone','w-aemail','w-aname'].forEach(function (id) { $(id).value = ''; });
+    $('w-plan').value = ''; $('w-tz').value = 'Europe/Moscow'; $('w-creds').hidden = true;
     $('w-slug')._touched = false;
   });
 
   /* ── навигация ── */
   document.querySelectorAll('.nav-item[data-view]').forEach(function (b) {
     b.addEventListener('click', function () {
+      if (b.getAttribute('data-view') === 'wizard') wLoadPlans();
       document.querySelectorAll('.nav-item[data-view]').forEach(function (x) { x.classList.toggle('on', x === b); });
       document.querySelectorAll('section[data-v]').forEach(function (s) { s.hidden = s.getAttribute('data-v') !== b.getAttribute('data-view'); });
     });
