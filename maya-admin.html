@@ -206,9 +206,19 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
         </div>
         <div class="crm-status" id="m-status"></div>
       </div>
-      <div class="actions">
+      <div class="actions" style="margin-bottom:18px">
         <button class="btn" id="m-save">Сохранить CRM</button>
         <button class="btn ghost" id="m-test">Проверить связь</button>
+      </div>
+      <div class="card">
+        <h2>Живая запись</h2>
+        <div id="lv-status" style="font-size:13.5px;line-height:1.7"></div>
+        <div id="lv-blockers" class="hint" style="margin-top:6px"></div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn ghost" id="lv-preview">Preview</button>
+          <button class="btn" id="lv-live">Включить Live</button>
+        </div>
+        <div class="hint" style="margin-top:12px">Preview: запись проверяется, но не создаётся. Live: клиенты создают настоящие записи в вашей CRM.</div>
       </div>
     </section>
     <!-- ВИЗАРД: НОВЫЙ САЛОН -->
@@ -467,6 +477,25 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
       $('m-company').value = sj.companyId != null ? sj.companyId : '';
       crmStatus('Подключено: ' + (crm.provider || '') + ' · статус ' + (crm.status || '—'), true);
     }
+
+    /* live-режим записи */
+    var req = t.booking_mode_requested || 'preview';
+    var eff = t.booking_mode_effective || 'preview';
+    $('lv-status').textContent =
+      eff === 'live' ? '🟢 Живая запись включена'
+      : req === 'live' ? '🟡 Live запрошен, но пока не активен'
+      : 'Сейчас: предпросмотр — запись проверяется, но не создаётся.';
+    var blMap = {
+      tenant_not_active: 'салон ещё не активирован',
+      mock_crm_only: 'подключена demo CRM — нужна реальная',
+      crm_not_active: 'CRM ещё не активна',
+      booking_feature_disabled: 'в тарифе нет функции записи'
+    };
+    var bl = (t.booking_live_blockers || []).map(function (b) { return blMap[b] || b; });
+    $('lv-blockers').textContent = bl.length ? 'Что мешает live: ' + bl.join(' · ') : '';
+    $('lv-live').textContent = req === 'live' ? (eff === 'live' ? 'Live включён' : 'Live запрошен') : 'Включить Live';
+    $('lv-live').disabled = req === 'live' && eff === 'live';
+    $('lv-preview').disabled = req === 'preview';
   }
   function kv(k, v) { return '<div class="kv"><span>' + k + '</span><span>' + v + '</span></div>'; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -571,6 +600,18 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     } catch (e) { toast(e.message, 'err'); }
     finally { busy(this, false); }
   });
+  async function setBookingMode(mode, btn) {
+    busy(btn, true, 'Секунду…');
+    try {
+      await api('PATCH', '/admin/tenants/' + S.tid, { bookingMode: mode });
+      toast(mode === 'live' ? 'Live-режим запрошен' : 'Возвращён предпросмотр', 'ok');
+      await loadTenant();
+      reloadPreview();
+    } catch (e) { toast(e.message, 'err'); }
+    finally { busy(btn, false); }
+  }
+  $('lv-preview').addEventListener('click', function () { setBookingMode('preview', this); });
+  $('lv-live').addEventListener('click', function () { setBookingMode('live', this); });
   $('m-test').addEventListener('click', async function () {
     busy(this, true, 'Проверяем…');
     try {
