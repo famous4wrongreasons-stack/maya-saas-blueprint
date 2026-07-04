@@ -514,6 +514,7 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     var body = { provider: $('m-prov').value };
     var tokenV = $('m-token').value.trim(); if (tokenV) body.apiToken = tokenV;
     var baseV = $('m-base').value.trim(); if (baseV) body.baseUrl = baseV;
+    if (body.provider === 'mock' && !body.apiToken) body.apiToken = 'mock'; // DTO требует токен даже для demo
     var comp = $('m-company').value.trim();
     var sj = {};
     if (comp) sj.companyId = isNaN(Number(comp)) ? comp : Number(comp);
@@ -647,6 +648,7 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
       /* 3. CRM */
       var cBody = { provider: prov };
       var tk = $('w-token').value.trim(); if (tk) cBody.apiToken = tk;
+      if (prov === 'mock' && !cBody.apiToken) cBody.apiToken = 'mock';
       var cp = $('w-company').value.trim();
       if (cp) cBody.settingsJson = { companyId: isNaN(Number(cp)) ? cp : Number(cp) };
       try {
