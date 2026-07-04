@@ -774,6 +774,18 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
   });
 
   renderStats([]);
+
+  /* self-serve handoff: /maya-start.html кладёт сюда JWT нового владельца */
+  try {
+    var hoff = JSON.parse(localStorage.getItem('maya_admin_handoff') || 'null');
+    if (hoff && hoff.token) {
+      localStorage.removeItem('maya_admin_handoff');
+      S.token = hoff.token;
+      S.user = hoff.user || {};
+      var htid = S.user.tenant_id || S.user.tenantId || null;
+      if (htid) enter(htid);
+    }
+  } catch (e) {}
 })();
 </script>
 </body>

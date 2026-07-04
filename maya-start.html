@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAYA · Создать салон</title>
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{
+  --bg:#0b0b0d; --bg1:#101114; --bg2:#15171c;
+  --ink:#f2f0ec; --dim:rgba(242,240,236,.62); --faint:rgba(242,240,236,.36);
+  --line:rgba(242,240,236,.10); --line2:rgba(242,240,236,.18);
+  --acc:#c9c2ae; --acc-hi:#e6ddc4; --acc-deep:#96907e; --acc-ink:#141310;
+  --ok:#34d399; --err:#e0564f;
+  --disp:'Montserrat',sans-serif; --body:'Manrope',sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:
+  radial-gradient(60% 44% at 70% 0%,rgba(201,194,174,.10),transparent 60%),var(--bg);
+  color:var(--ink);font-family:var(--body);font-size:14px;-webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;align-items:center;padding:0 20px 60px}
+a{color:inherit;text-decoration:none}
+header{width:100%;max-width:520px;display:flex;justify-content:space-between;align-items:center;padding:22px 0 36px}
+.logo{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.26em}
+.logo b{color:var(--acc);font-weight:300}
+.backlink{font-size:12.5px;color:var(--dim)}
+.backlink:hover{color:var(--ink)}
+.box{width:100%;max-width:520px;background:var(--bg1);border:1px solid var(--line);border-radius:20px;padding:32px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 40px 90px rgba(0,0,0,.45)}
+h1{font-family:var(--disp);font-weight:300;font-size:22px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
+.sub{color:var(--dim);font-size:13.5px;line-height:1.6;margin-bottom:26px}
+label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:0 0 7px 2px}
+input{font-family:var(--body);font-size:14px;color:var(--ink);background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px 13px;width:100%;outline:none;transition:border-color .15s}
+input:hover{border-color:var(--line2)}
+input:focus-visible{border-color:var(--acc);box-shadow:0 0 0 3px rgba(201,194,174,.14)}
+input::placeholder{color:var(--faint)}
+.field{margin-bottom:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.row2{grid-template-columns:1fr}}
+.hint{font-size:11.5px;color:var(--faint);margin-top:6px;line-height:1.5}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;height:50px;border:0;border-radius:13px;font-family:var(--disp);font-weight:600;font-size:14px;cursor:pointer;background:linear-gradient(145deg,var(--acc-hi),var(--acc-deep));color:var(--acc-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.4);transition:transform .12s var(--ease),box-shadow .3s;margin-top:6px}
+.btn:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 8px 26px rgba(201,194,174,.2)}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.5;cursor:default;box-shadow:none}
+.ferr{color:var(--err);font-size:12.5px;margin-top:12px;line-height:1.5;display:none}
+.note{font-size:11.5px;color:var(--faint);margin-top:16px;text-align:center;line-height:1.6}
+/* успех */
+.done{display:none;text-align:center}
+.done .mark{font-size:34px;margin-bottom:10px}
+.done h1{margin-bottom:6px}
+.creds{margin:20px 0;padding:16px;border:1px dashed var(--line2);border-radius:14px;text-align:left;font-size:13px;line-height:2}
+.creds .cap{font-family:var(--disp);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ok);margin-bottom:6px}
+.creds code{background:var(--bg2);border:1px solid var(--line);border-radius:7px;padding:2px 9px;user-select:all}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/maya-site.html">MA<b>Y</b>A</a>
+  <a class="backlink" href="/maya-site.html">← на витрину</a>
+</header>
+
+<div class="box" id="form-box">
+  <h1>Создайте салон</h1>
+  <div class="sub">Минута — и у вас триал на 14 дней с demo-данными. CRM и оплату подключите позже, когда осмотритесь.</div>
+  <div class="field"><label>Название салона</label><input id="f-name" placeholder="Барбершоп «Грива»" autocomplete="organization"></div>
+  <div class="field"><label>Адрес приложения (slug)</label><input id="f-slug" placeholder="griva"><div class="hint">Латиница и дефисы — это будет ссылка вашего приложения.</div></div>
+  <div class="row2">
+    <div class="field"><label>Ваш e-mail</label><input id="f-email" type="email" placeholder="owner@salon.ru" autocomplete="email"></div>
+    <div class="field"><label>Ваше имя</label><input id="f-oname" placeholder="Имя" autocomplete="name"></div>
+  </div>
+  <div class="row2">
+    <div class="field"><label>Телефон · опц.</label><input id="f-phone" inputMode="tel" placeholder="+7 (___) ___-__-__" autocomplete="tel"></div>
+    <div class="field"><label>Пароль · опц.</label><input id="f-pass" type="password" placeholder="пусто — сгенерируем" autocomplete="new-password"></div>
+  </div>
+  <button class="btn" id="f-btn">Создать салон бесплатно</button>
+  <div class="ferr" id="f-err"></div>
+  <div class="note">14 дней триала · карта не нужна · demo-данные вместо CRM на старте</div>
+</div>
+
+<div class="box done" id="done-box">
+  <div class="mark">✦</div>
+  <h1>Салон создан</h1>
+  <div class="sub" id="d-name" style="margin-bottom:0"></div>
+  <div class="creds" id="d-creds"></div>
+  <button class="btn" id="d-admin">Открыть админку салона</button>
+  <div class="note" id="d-applink"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var qs = new URLSearchParams(location.search);
+  var API = (qs.get('api') || localStorage.getItem('maya_admin_api') || 'http://localhost:3000/api').replace(/\/+$/, '');
+  var $ = function (id) { return document.getElementById(id); };
+  var RES = null;
+
+  function translit(str) {
+    var map = { а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'i',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'c',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya' };
+    return String(str || '').toLowerCase().split('').map(function (ch) {
+      return map[ch] != null ? map[ch] : ch;
+    }).join('').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+  }
+  $('f-name').addEventListener('input', function () {
+    if (!$('f-slug')._touched) $('f-slug').value = translit(this.value);
+  });
+  $('f-slug').addEventListener('input', function () { this._touched = true; });
+
+  function fail(msg) {
+    var e = $('f-err');
+    e.textContent = msg;
+    e.style.display = 'block';
+  }
+
+  $('f-btn').addEventListener('click', async function () {
+    $('f-err').style.display = 'none';
+    var name = $('f-name').value.trim();
+    var slug = $('f-slug').value.trim();
+    var email = $('f-email').value.trim();
+    if (!name) return fail('Введите название салона.');
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return fail('Slug: строчная латиница, цифры и дефисы.');
+    if (!/^\S+@\S+\.\S+$/.test(email)) return fail('Введите корректный e-mail.');
+    var body = { name: name, slug: slug, ownerEmail: email };
+    var on = $('f-oname').value.trim(); if (on) body.ownerName = on;
+    var ph = $('f-phone').value.replace(/\D/g, ''); if (ph.length >= 11) body.ownerPhone = '+' + (ph[0] === '8' ? '7' + ph.slice(1) : ph);
+    var pw = $('f-pass').value; if (pw) body.password = pw;
+    body.branchName = name;
+    body.branchTimezone = 'Europe/Moscow';
+    this.disabled = true;
+    this.textContent = 'Создаём…';
+    try {
+      var r = await fetch(API + '/onboarding/trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      var text = await r.text();
+      var data = null;
+      try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+      if (!r.ok) {
+        var eo = data && typeof data === 'object' ? data.error : null;
+        var msg = (eo && eo.message) || (data && data.message) || ('HTTP ' + r.status);
+        if (r.status === 409) msg = 'Такой адрес (slug) уже занят — попробуйте другой.';
+        throw new Error(Array.isArray(msg) ? msg.join('; ') : msg);
+      }
+      RES = data;
+      showDone(data, email, pw);
+    } catch (e) {
+      fail(e.message || 'Не получилось — попробуйте ещё раз.');
+    } finally {
+      this.disabled = false;
+      this.textContent = 'Создать салон бесплатно';
+    }
+  });
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function showDone(res, email, ownPass) {
+    $('form-box').style.display = 'none';
+    $('done-box').style.display = 'block';
+    var t = res.tenant || {};
+    $('d-name').textContent = (t.name || '') + ' · триал 14 дней';
+    var tp = res.temporary_password;
+    $('d-creds').innerHTML =
+      '<div class="cap">Доступ в админку · сохраните</div>' +
+      'E-mail: <code>' + esc(email) + '</code><br>' +
+      (tp ? 'Пароль: <code>' + esc(tp) + '</code> <span style="color:var(--faint)">· показывается один раз</span>'
+          : 'Пароль: тот, что вы задали.') +
+      '<br>Салон (slug): <code>' + esc(t.slug || '') + '</code>';
+    var appUrl = location.origin + '/app.html?booking_backend=saas-local&booking_api_base=' + encodeURIComponent(API) + '&booking_tenant=' + encodeURIComponent(t.slug || '');
+    $('d-applink').innerHTML = 'Приложение вашего салона: <a href="' + appUrl + '" target="_blank" rel="noopener" style="color:var(--acc-hi)">открыть предпросмотр →</a>';
+  }
+
+  $('d-admin').addEventListener('click', function () {
+    if (RES && RES.access_token) {
+      try {
+        localStorage.setItem('maya_admin_handoff', JSON.stringify({ token: RES.access_token, user: RES.user || null }));
+      } catch (e) {}
+    }
+    location.href = '/maya-admin.html';
+  });
+})();
+</script>
+</body>
+</html>
