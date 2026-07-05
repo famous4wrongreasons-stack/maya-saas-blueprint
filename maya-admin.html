@@ -260,6 +260,16 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
         <h2>Рассчитано сервером</h2>
         <div id="b-computed"><div class="skel" style="width:70%"></div></div>
       </div>
+      <div class="card">
+        <h2>Оплата</h2>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" id="pay-checkout">Оплатить подписку</button>
+          <button class="btn ghost" id="pay-charge" style="display:none">Списать сейчас</button>
+          <button class="btn ghost" id="pay-rundue" style="display:none">Проверить просроченные</button>
+        </div>
+        <div id="pay-list" style="margin-top:16px"><div class="hint">Платежей пока нет.</div></div>
+        <div class="hint" style="margin-top:12px">Оплата проходит на стороне ЮKassa. Карта и списания — на бэкенде, здесь только кнопки.</div>
+      </div>
       <div class="actions"><button class="btn" id="b-save">Сохранить подписку</button></div>
     </section>
 
@@ -462,7 +472,7 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     $('login').style.display = 'none';
     $('app').style.display = 'grid';
     $('s-who').textContent = (S.user.email || '') + ' · ' + (S.user.role === 'platform_owner' ? 'владелец платформы' : 'администратор салона');
-    if (S.user.role === 'platform_owner') { $('nav-wizard').hidden = false; $('nav-billing').hidden = false; }
+    if (S.user.role === 'platform_owner') { $('nav-wizard').hidden = false; $('nav-billing').hidden = false; $('pay-charge').style.display = ''; $('pay-rundue').style.display = ''; }
     await loadTenant();
     reloadPreview();
   }
@@ -713,6 +723,51 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     } catch (e) { toast(e.message, 'err'); }
     finally { busy(this, false); }
   });
+  function payMsg(e) {
+    var c = e && e.code;
+    if (c === 'billing_provider_unavailable') return 'Оплата временно недоступна — провайдер не настроен.';
+    if (c === 'billing_method_missing') return 'Нет сохранённого способа оплаты для списания.';
+    return e && e.message || 'Ошибка оплаты';
+  }
+  async function billLoadPayments() {
+    try {
+      var r = await api('GET', '/admin/tenants/' + S.tid + '/billing/payments');
+      var list = (r && r.payments) || [];
+      var host = $('pay-list');
+      if (!list.length) { host.innerHTML = '<div class="hint">Платежей пока нет.</div>'; return; }
+      var purp = { initial_checkout: 'Первая оплата', recurring: 'Списание', recurring_charge: 'Списание' };
+      var st = { succeeded: ['оплачен', 'ok'], pending: ['ожидает', ''], canceled: ['отменён', ''] };
+      host.innerHTML = list.map(function (p) {
+        var ss = st[p.status] || [p.status || '—', ''];
+        var when = p.paid_at || p.canceled_at;
+        var amt = p.amount != null ? Number(p.amount).toLocaleString('ru-RU') + ' ' + (p.currency === 'RUB' || !p.currency ? '₽' : esc(p.currency)) : '';
+        return kv(esc(purp[p.purpose] || p.purpose || 'платёж') + ' · ' + amt,
+                  '<span class="chip ' + ss[1] + '">' + esc(ss[0]) + '</span> ' + (when ? esc(fmtDT(when)) : ''));
+      }).join('');
+    } catch (e) { $('pay-list').innerHTML = '<div class="hint">Не удалось загрузить платежи.</div>'; }
+  }
+  $('pay-checkout').addEventListener('click', async function () {
+    busy(this, true, 'Открываем…');
+    try {
+      var body = { returnUrl: location.href.split('#')[0] };
+      if ($('b-plan').value) body.planId = $('b-plan').value;
+      var r = await api('POST', '/admin/tenants/' + S.tid + '/billing/checkout', body);
+      var url = r && (r.confirmation_url || (r.payment && r.payment.confirmation_url));
+      if (url) { location.href = url; return; }
+      toast('Не получили ссылку оплаты', 'err');
+    } catch (e) { toast(payMsg(e), 'err'); }
+    finally { busy(this, false); }
+  });
+  $('pay-charge').addEventListener('click', async function () {
+    busy(this, true, 'Списываем…');
+    try { await api('POST', '/admin/tenants/' + S.tid + '/billing/charge'); toast('Списание запущено', 'ok'); await loadTenant(); await billLoadPayments(); }
+    catch (e) { toast(payMsg(e), 'err'); } finally { busy(this, false); }
+  });
+  $('pay-rundue').addEventListener('click', async function () {
+    busy(this, true, 'Проверяем…');
+    try { await api('POST', '/admin/billing/run-due'); toast('Проверка выполнена', 'ok'); await loadTenant(); await billLoadPayments(); }
+    catch (e) { toast(payMsg(e), 'err'); } finally { busy(this, false); }
+  });
   $('lv-live').addEventListener('click', function () { setBookingMode('live', this); });
   $('m-test').addEventListener('click', async function () {
     busy(this, true, 'Проверяем…');
@@ -911,6 +966,7 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
   document.querySelectorAll('.nav-item[data-view]').forEach(function (b) {
     b.addEventListener('click', function () {
       if (b.getAttribute('data-view') === 'wizard') wLoadPlans();
+      if (b.getAttribute('data-view') === 'billing') billLoadPayments();
       document.querySelectorAll('.nav-item[data-view]').forEach(function (x) { x.classList.toggle('on', x === b); });
       document.querySelectorAll('section[data-v]').forEach(function (s) { s.hidden = s.getAttribute('data-v') !== b.getAttribute('data-view'); });
     });

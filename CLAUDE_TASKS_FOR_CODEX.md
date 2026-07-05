@@ -26,12 +26,8 @@
 ### ~~3. Биллинг подписок (ручной минимум)~~ · ✅ ЗАКРЫТО 2026-07-05
 (бэк Codex: поля billing + пересчёт grace; панель «Подписка» в админке Claude)
 
-### 3b. Биллинг: реальная оплата · blocking для денег
-- Desired: ЮKassa checkout/виджет, рекуррентные списания, webhooks, авто-переход past_due
-- Current: тарифы есть, списаний/продления/`past_due`-переходов нет
-- Desired: минимум — ручной перевод тарифа/статуса + даты периода;
-  максимум — ЮKassa-автосписание (см. черновик
-  `maya-saas-blueprint/pg/tenant_billing.py`)
+### ~~3b. Биллинг: реальная оплата~~ · ✅ BACKEND ЗАКРЫТ 2026-07-05
+(бэк Codex: YooKassa checkout, webhook, сохранение payment_method, recurring-charge endpoint, run-due/past_due; UI-пакет для Claude: `CLAUDE_YOOKASSA_BILLING_PACKET.md`)
 
 ### 4. Upload логотипа файлом · non-blocking
 - Endpoint: нет (`POST /admin/tenants/:id/logo`?)
