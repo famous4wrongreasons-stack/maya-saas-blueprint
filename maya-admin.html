@@ -133,6 +133,7 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     <button class="nav-item" data-view="brand">Бренд</button>
     <button class="nav-item" data-view="content">Тексты</button>
     <button class="nav-item" data-view="crm">CRM</button>
+    <button class="nav-item" data-view="billing" id="nav-billing" hidden>Подписка</button>
     <button class="nav-item" data-view="wizard" id="nav-wizard" hidden>＋ Новый салон</button>
     <div class="sp"></div>
     <div class="who" id="s-who"></div>
@@ -221,6 +222,47 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
         <div class="hint" style="margin-top:12px">Preview: запись проверяется, но не создаётся. Live: клиенты создают настоящие записи в вашей CRM.</div>
       </div>
     </section>
+    <!-- ПОДПИСКА (операторская) -->
+    <section data-v="billing" hidden>
+      <h1>Подписка</h1><div class="sub">Ручное управление тарифом, статусом и периодом. Оплата/списания — отдельный этап.</div>
+      <div class="card">
+        <h2>Тариф и статус</h2>
+        <div class="row2">
+          <div class="field"><label>Тариф</label><select id="b-plan"><option value="">— не задан —</option></select></div>
+          <div class="field"><label>Статус</label>
+            <select id="b-status">
+              <option value="trial">Триал</option>
+              <option value="active">Активен</option>
+              <option value="past_due">Просрочен (грейс)</option>
+              <option value="suspended">Приостановлен</option>
+              <option value="cancelled">Отменён</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="display:flex;gap:10px;align-items:center;margin-top:4px">
+          <input type="checkbox" id="b-selfreg" style="width:18px;height:18px;flex-shrink:0">
+          <label for="b-selfreg" style="margin:0;cursor:pointer">Разрешить самостоятельную регистрацию клиентов</label>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Период</h2>
+        <div class="row2">
+          <div class="field"><label>Триал до</label><input type="date" id="b-trial"></div>
+          <div class="field"><label>Способ оплаты · ID</label><input id="b-method" placeholder="pm_… · пусто = не привязан"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Период с</label><input type="date" id="b-cps"></div>
+          <div class="field"><label>Период по</label><input type="date" id="b-cpe"></div>
+        </div>
+        <div class="hint" style="margin-top:2px">Очистка даты сохранится как «сбросить». Вычисляемые поля — ниже, только чтение.</div>
+      </div>
+      <div class="card">
+        <h2>Рассчитано сервером</h2>
+        <div id="b-computed"><div class="skel" style="width:70%"></div></div>
+      </div>
+      <div class="actions"><button class="btn" id="b-save">Сохранить подписку</button></div>
+    </section>
+
     <!-- ВИЗАРД: НОВЫЙ САЛОН -->
     <section data-v="wizard" hidden>
       <h1>Новый салон</h1><div class="sub">Четыре шага — и у салона есть своё приложение</div>
@@ -420,7 +462,7 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     $('login').style.display = 'none';
     $('app').style.display = 'grid';
     $('s-who').textContent = (S.user.email || '') + ' · ' + (S.user.role === 'platform_owner' ? 'владелец платформы' : 'администратор салона');
-    if (S.user.role === 'platform_owner') $('nav-wizard').hidden = false;
+    if (S.user.role === 'platform_owner') { $('nav-wizard').hidden = false; $('nav-billing').hidden = false; }
     await loadTenant();
     reloadPreview();
   }
@@ -428,6 +470,25 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
   $('s-logout').addEventListener('click', function () { location.reload(); });
 
   /* ── данные тенанта ── */
+  var _billPlans = false;
+  async function billLoadPlans() {
+    if (_billPlans) return;
+    try {
+      var l = await api('GET', '/admin/plans');
+      var items = Array.isArray(l) ? l : (l.items || []);
+      var sel = $('b-plan');
+      items.forEach(function (p) {
+        var o = document.createElement('option');
+        o.value = p.id;
+        var price = p.price_monthly != null ? p.price_monthly : p.priceMonthly;
+        o.textContent = (p.name || p.id) + (price != null ? ' · ' + Number(price).toLocaleString('ru-RU') + ' ₽' : '');
+        sel.appendChild(o);
+      });
+      _billPlans = true;
+    } catch (e) {}
+  }
+  function isoDay(iso) { return iso ? String(iso).slice(0, 10) : ''; }
+  function fmtDT(iso) { try { return iso ? new Date(iso).toLocaleDateString('ru-RU') : '—'; } catch (e) { return '—'; } }
   async function loadTenant() {
     var t = await api('GET', '/admin/tenants/' + S.tid);
     S.tenant = t;
@@ -496,6 +557,28 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     $('lv-live').textContent = req === 'live' ? (eff === 'live' ? 'Live включён' : 'Live запрошен') : 'Включить Live';
     $('lv-live').disabled = req === 'live' && eff === 'live';
     $('lv-preview').disabled = req === 'preview';
+
+    /* подписка (операторская) */
+    if (S.user && S.user.role === 'platform_owner') {
+      await billLoadPlans();
+      var bl = t.billing || {};
+      $('b-status').value = t.status || 'trial';
+      $('b-plan').value = t.plan_id || '';
+      $('b-selfreg').checked = t.allow_self_registration !== false;
+      $('b-trial').value = isoDay(bl.trial_ends_at);
+      $('b-cps').value = isoDay(bl.current_period_start);
+      $('b-cpe').value = isoDay(bl.current_period_end);
+      $('b-method').value = bl.billing_method_id || '';
+      var access = fmtDT(bl.access_window_ends_at);
+      var grace = fmtDT(bl.grace_ends_at);
+      var hot = t.status === 'past_due';
+      var trialHot = t.status === 'trial';
+      $('b-computed').innerHTML =
+        kv('Доступ оплачен до', esc(access)) +
+        kv(hot ? '<span style="color:#e0564f">Грейс до</span>' : 'Грейс до', esc(grace)) +
+        kv('Триал до', '<span' + (trialHot ? ' style="color:var(--acc)"' : '') + '>' + esc(fmtDT(bl.trial_ends_at)) + '</span>') +
+        kv('Способ оплаты', bl.billing_method_attached ? '<span class="chip ok">привязан</span>' : '<span class="hint">не привязан</span>');
+    }
   }
   function kv(k, v) { return '<div class="kv"><span>' + k + '</span><span>' + v + '</span></div>'; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -611,6 +694,25 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     finally { busy(btn, false); }
   }
   $('lv-preview').addEventListener('click', function () { setBookingMode('preview', this); });
+  function billDate(id) { var v = $(id).value; return v ? new Date(v + 'T00:00:00.000Z').toISOString() : ''; }
+  $('b-save').addEventListener('click', async function () {
+    var body = {
+      status: $('b-status').value,
+      allowSelfRegistration: $('b-selfreg').checked,
+      trialEndsAt: billDate('b-trial'),
+      currentPeriodStart: billDate('b-cps'),
+      currentPeriodEnd: billDate('b-cpe'),
+      billingMethodId: $('b-method').value.trim()   // пусто = "" = сброс
+    };
+    if ($('b-plan').value) body.planId = $('b-plan').value;
+    busy(this, true);
+    try {
+      await api('PATCH', '/admin/tenants/' + S.tid, body);
+      toast('Подписка сохранена', 'ok');
+      await loadTenant();
+    } catch (e) { toast(e.message, 'err'); }
+    finally { busy(this, false); }
+  });
   $('lv-live').addEventListener('click', function () { setBookingMode('live', this); });
   $('m-test').addEventListener('click', async function () {
     busy(this, true, 'Проверяем…');
