@@ -1,7 +1,7 @@
 # CLAUDE_TASKS_FOR_CODEX
 
 > Живая очередь заданий для Codex от Claude. Обновляется после каждого
-> выполненного фронт-пункта. Дата обновления: 2026-07-05 (пункт 1 закрыт).
+> выполненного фронт-пункта. Дата обновления: 2026-07-05 (пункты 1-2 закрыты).
 
 ## Очередь (по приоритету)
 
@@ -15,12 +15,13 @@
   `GET /mobile/config/:slug`
 - Фронт после этого: ничего менять не нужно — подхватит сам
 
-### 2. SMS-транспорт для phone-auth · blocking для прода
+### ~~2. SMS-транспорт для phone-auth~~ · ✅ ЗАКРЫТО 2026-07-05
 - Endpoint: `POST /auth/phone/start`
-- Current: `delivery: debug`, код на экране
-- Desired: реальная отправка (провайдер за Стасом), `delivery: 'sms'`,
-  `debug_code` отсутствует в проде
-- Фронт готов: debug-чип показывается только при `delivery === 'debug'`
+- Status: добавлен transport-layer `debug | smsru`, `delivery: 'sms'` в проде
+  при валидном `SMSRU_API_ID`, `debug_code` скрывается вне debug-режима
+- Safe mode: локально и в test при `PHONE_AUTH_PROVIDER=auto` всё остаётся
+  в `delivery: 'debug'`
+- Фронт: ничего менять не нужно, текущая логика Claude уже совместима
 
 ### 3. Биллинг подписок · blocking для денег
 - Current: тарифы есть, списаний/продления/`past_due`-переходов нет
@@ -36,3 +37,10 @@
 ### 5. Деплой NestJS-бэка + поддомены салонов · blocking для реальных клиентов
 - Current: всё на localhost:3000
 - Desired: план деплоя (сервер/домен/SSL) — согласуем со Стасом
+
+### 6. OAuth-ключи провайдеров (Яндекс/Telegram) + redirect whitelist · blocking для соц-входа
+- Current: локальный env без ключей → `/auth/oauth/*/start` = `social_provider_unavailable`
+- Desired: клиент-id/секреты Яндекс+Telegram в env; в whitelist redirect_uri
+  добавить `http://127.0.0.1:8787/oauth-callback.html` (локально) и
+  `https://malesthetic.pro/app/oauth-callback.html` (прод)
+- Фронт соц-входа готов (кнопки + callback-страница), ждёт только ключи

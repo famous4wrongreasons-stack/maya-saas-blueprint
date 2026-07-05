@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Вход · MAYA</title>
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{
+  --bg:#070810; --ink:#f2f0ec; --dim:rgba(242,240,236,.6); --faint:rgba(242,240,236,.36);
+  --line:rgba(242,240,236,.14); --acc:#c9c2ae; --acc-ink:#141310; --err:#e0564f;
+  --disp:'Montserrat',sans-serif; --body:'Manrope',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(120% 80% at 50% -10%,rgba(201,194,174,.08),transparent 55%),var(--bg);
+  color:var(--ink);font-family:var(--body);display:flex;align-items:center;justify-content:center;padding:24px}
+.card{width:100%;max-width:360px;text-align:center}
+.spin{width:38px;height:38px;margin:0 auto 22px;border-radius:50%;
+  background:conic-gradient(from 0deg,rgba(201,194,174,0),var(--acc));
+  -webkit-mask:radial-gradient(farthest-side,#0000 calc(100% - 5px),#000 calc(100% - 5px));
+  mask:radial-gradient(farthest-side,#0000 calc(100% - 5px),#000 calc(100% - 5px));animation:sp .9s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+h1{font-family:var(--disp);font-weight:300;font-size:19px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+p{color:var(--dim);font-size:13.5px;line-height:1.6}
+.err h1{color:var(--err)}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:46px;padding:0 24px;margin-top:22px;
+  border:0;border-radius:12px;font-family:var(--disp);font-weight:600;font-size:13px;cursor:pointer;
+  background:var(--acc);color:var(--acc-ink)}
+@media (prefers-reduced-motion: reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="spin" id="spin"></div>
+  <h1 id="title">Входим…</h1>
+  <p id="msg">Завершаем вход в приложение салона.</p>
+  <button class="btn" id="btn" style="display:none">Вернуться</button>
+</div>
+<script>
+(function () {
+  'use strict';
+  var AUTH_KEY = 'me_saas_auth_v1';       // тот же ключ, что читает app.html
+  var PENDING_KEY = 'me_oauth_pending';
+  var $ = function (id) { return document.getElementById(id); };
+
+  function codeText(code, fallback) {
+    var m = {
+      social_provider_unavailable: 'Вход через этот сервис сейчас недоступен — войдите по номеру.',
+      social_state_invalid: 'Сессия входа устарела — начните заново.',
+      social_exchange_failed: 'Не удалось завершить вход. Попробуйте ещё раз.',
+      social_token_invalid: 'Не удалось завершить вход. Попробуйте ещё раз.',
+      social_identity_conflict: 'Этот аккаунт уже привязан к другому профилю.',
+      trial_client_registration_disabled: 'Салон ещё готовится к запуску — запись откроется скоро.',
+      self_registration_disabled: 'Регистрация в этом салоне сейчас закрыта.'
+    };
+    return m[code] || fallback || 'Не удалось войти.';
+  }
+
+  function fail(text) {
+    $('spin').style.display = 'none';
+    $('card').classList.add('err');
+    $('title').textContent = 'Не получилось';
+    $('msg').textContent = text;
+    var pend = readPending();
+    var b = $('btn');
+    b.style.display = 'inline-flex';
+    b.textContent = 'Вернуться ко входу';
+    b.onclick = function () { location.href = (pend && pend.ret) || '/app.html'; };
+  }
+
+  function readPending() {
+    try { return JSON.parse(localStorage.getItem(PENDING_KEY) || 'null'); } catch (e) { return null; }
+  }
+
+  var q = new URLSearchParams(location.search);
+  var err = q.get('error');
+  var errDesc = q.get('error_description');
+  var code = q.get('code');
+  var state = q.get('state') || '';
+
+  if (err) { fail(errDesc || codeText(err, 'Провайдер отклонил вход.')); return; }
+  if (!code || !state) { fail('Не хватает данных для входа. Начните заново.'); return; }
+
+  var provider = state.indexOf('ya_') === 0 ? 'yandex' : state.indexOf('te_') === 0 ? 'telegram' : null;
+  if (!provider) { fail('Неизвестный тип входа. Начните заново.'); return; }
+
+  var pend = readPending();
+  var apiBase = (pend && pend.apiBase) || (new URLSearchParams(location.search).get('api')) || 'http://localhost:3000/api';
+  apiBase = String(apiBase).replace(/\/+$/, '');
+
+  fetch(apiBase + '/auth/oauth/' + provider + '/complete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state: state, code: code })
+  }).then(function (r) {
+    return r.text().then(function (t) {
+      var data = null; try { data = t ? JSON.parse(t) : null; } catch (e) {}
+      if (!r.ok) {
+        var eo = data && typeof data === 'object' ? data.error : null;
+        var c = eo && eo.code;
+        throw new Error(codeText(c, (eo && eo.message) || (data && data.message) || 'Не удалось войти.'));
+      }
+      return data;
+    });
+  }).then(function (data) {
+    if (!data || !data.access_token) throw new Error('Пустой ответ входа.');
+    // сохраняем сессию ровно как phone-auth
+    try { localStorage.setItem(AUTH_KEY, JSON.stringify({ token: data.access_token, user: data.user || null })); } catch (e) {}
+    try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
+    $('title').textContent = 'Готово';
+    $('msg').textContent = 'Возвращаемся в приложение…';
+    var ret = (pend && pend.ret) || '/app.html';
+    setTimeout(function () { location.href = ret; }, 400);
+  }).catch(function (e) {
+    fail(e.message || 'Не удалось войти.');
+  });
+})();
+</script>
+</body>
+</html>
