@@ -4,301 +4,433 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MAYA — приложение вашего салона под вашим брендом</title>
-<meta name="description" content="Онлайн-запись, лояльность и AI-администратор — в брендированном приложении салона. Соберите за вечер, без разработчиков.">
+<meta name="description" content="Онлайн-запись, лояльность и AI-администратор Майя — в приложении вашего салона под вашим брендом. Соберите за вечер, без разработчиков. 14 дней бесплатно.">
 <link rel="stylesheet" href="/fonts.css">
 <style>
+/* ═══ MAYA site · тёплый светлый минимализм · OKLCH, один янтарный акцент ═══ */
 :root{
-  --bg:#0b0b0d; --bg1:#101114; --bg2:#15171c;
-  --ink:#f2f0ec; --dim:rgba(242,240,236,.62); --faint:rgba(242,240,236,.36);
-  --line:rgba(242,240,236,.09); --line2:rgba(242,240,236,.16);
-  --acc:#c9c2ae; --acc-hi:#e6ddc4; --acc-deep:#96907e; --acc-ink:#141310;
+  --bg:oklch(0.991 0.006 83);
+  --surface:oklch(1 0 0);
+  --surface-2:oklch(0.972 0.008 82);
+  --ink:oklch(0.26 0.014 68);
+  --muted:oklch(0.47 0.012 68);
+  --faint:oklch(0.63 0.010 70);
+  --line:oklch(0.905 0.008 80);
+  --line-2:oklch(0.86 0.010 80);
+  --acc:oklch(0.64 0.115 66);         /* латунь/янтарь — редко и по смыслу */
+  --acc-soft:oklch(0.93 0.045 78);
+  --acc-ink:oklch(0.32 0.05 60);
+  --acc-text:oklch(0.52 0.12 62);
+  --btn:oklch(0.28 0.02 60);          /* тёмный эспрессо — primary */
+  --btn-hi:oklch(0.34 0.024 62);
+  --btn-ink:oklch(0.975 0.01 85);
   --disp:'Montserrat',sans-serif; --body:'Manrope',sans-serif;
   --ease:cubic-bezier(.16,1,.3,1);
+  --wrap:1140px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
-.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+img{max-width:100%;display:block}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
+::selection{background:var(--acc-soft)}
 
 /* reveal */
-.rv{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.rv{opacity:0;transform:translateY(20px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .rv.in{opacity:1;transform:none}
-@media (prefers-reduced-motion: reduce){.rv{opacity:1;transform:none;transition:none}}
+.rv.d1{transition-delay:.06s}.rv.d2{transition-delay:.12s}.rv.d3{transition-delay:.18s}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}*{scroll-behavior:auto}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:46px;padding:0 22px;
+  border:0;border-radius:12px;font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.01em;
+  cursor:pointer;background:var(--btn);color:var(--btn-ink);
+  transition:transform .16s var(--ease),background .2s,box-shadow .3s;box-shadow:0 1px 2px oklch(0.2 0.02 60/.12)}
+.btn:hover{background:var(--btn-hi);box-shadow:0 10px 30px oklch(0.28 0.02 60/.18);transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.99)}
+.btn:focus-visible{outline:2.5px solid var(--acc);outline-offset:3px}
+.btn.lg{height:54px;padding:0 30px;font-size:15px;border-radius:14px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line-2);box-shadow:none}
+.btn.ghost:hover{background:var(--surface-2);border-color:var(--ink);box-shadow:none}
 
 /* nav */
-nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(18px);background:rgba(11,11,13,.72);border-bottom:1px solid var(--line)}
-nav .wrap{display:flex;align-items:center;gap:28px;height:64px}
-.logo{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.26em}
-.logo b{color:var(--acc);font-weight:300}
-nav .links{display:flex;gap:24px;flex:1;justify-content:center}
-nav .links a{font-size:13px;color:var(--dim);transition:color .2s}
-nav .links a:hover{color:var(--ink)}
-.cta{display:inline-flex;align-items:center;justify-content:center;height:42px;padding:0 20px;border-radius:12px;font-family:var(--disp);font-weight:600;font-size:13px;background:linear-gradient(145deg,var(--acc-hi),var(--acc-deep));color:var(--acc-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.4);transition:transform .15s var(--ease),box-shadow .3s}
-.cta:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 8px 26px rgba(201,194,174,.22)}
-.cta:active{transform:scale(.98)}
-.cta.big{height:52px;padding:0 30px;font-size:14px}
-.ghost{display:inline-flex;align-items:center;height:52px;padding:0 26px;border-radius:12px;font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink);border:1px solid var(--line2);transition:border-color .2s}
-.ghost:hover{border-color:var(--acc)}
-@media (max-width:760px){nav .links{display:none}}
+.topbar{position:sticky;top:0;z-index:50;padding:14px 0;
+  background:oklch(0.991 0.006 83/.72);backdrop-filter:blur(16px) saturate(120%);border-bottom:1px solid transparent;transition:border-color .3s}
+.topbar.scrolled{border-color:var(--line)}
+.nav{display:flex;align-items:center;gap:20px}
+.logo{font-family:var(--disp);font-weight:600;font-size:16px;letter-spacing:.24em;display:flex;align-items:center;gap:2px}
+.logo .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);margin:0 1px 7px 3px}
+.nav .links{display:flex;gap:6px;flex:1;justify-content:center}
+.nav .links a{font-size:14px;color:var(--muted);padding:8px 14px;border-radius:9px;transition:color .2s,background .2s}
+.nav .links a:hover{color:var(--ink);background:var(--surface-2)}
+.nav .end{display:flex;gap:10px;align-items:center}
+.nav .signin{font-size:14px;color:var(--muted);padding:8px 6px}
+.nav .signin:hover{color:var(--ink)}
+@media (max-width:840px){.nav .links{display:none}.nav .signin{display:none}}
 
 /* hero */
-.hero{position:relative;padding:96px 0 80px;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:-20% -10% auto;height:130%;background:
-  radial-gradient(52% 44% at 68% 24%,rgba(201,194,174,.13),transparent 60%),
-  radial-gradient(40% 36% at 24% 70%,rgba(120,140,190,.07),transparent 65%);pointer-events:none}
-.hero::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E")}
-.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:60px;align-items:center;z-index:1}
-@media (max-width:920px){.hero .wrap{grid-template-columns:1fr}.phone-col{display:flex;justify-content:center}}
-.eyebrow{font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:var(--acc);margin-bottom:22px}
-h1{font-family:var(--disp);font-weight:300;font-size:clamp(34px,5.2vw,56px);line-height:1.08;letter-spacing:-.01em;text-transform:uppercase}
-h1 b{font-weight:600;color:var(--acc-hi)}
-.hero p{font-size:clamp(15px,1.6vw,17px);line-height:1.65;color:var(--dim);max-width:480px;margin:26px 0 34px}
-.hero .btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
-.trial-note{font-size:12px;color:var(--faint);margin-top:16px}
+.hero{position:relative;padding:76px 0 40px;overflow:hidden}
+.hero::before{content:"";position:absolute;left:50%;top:-140px;width:900px;height:520px;transform:translateX(-50%);
+  background:radial-gradient(46% 60% at 50% 40%,var(--acc-soft),transparent 68%);opacity:.7;pointer-events:none;filter:blur(6px)}
+.hero .wrap{position:relative;z-index:1}
+.pill{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 14px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);font-size:12.5px;color:var(--muted);font-weight:500}
+.pill b{color:var(--acc-ink);font-weight:700}
+.hero h1{font-family:var(--disp);font-weight:300;font-size:clamp(38px,6vw,68px);line-height:1.04;letter-spacing:-.022em;
+  margin:24px 0 0;max-width:14ch}
+.hero h1 b{font-weight:600}
+.hero .lead{font-size:clamp(16px,1.7vw,19px);color:var(--muted);max-width:46ch;margin:22px 0 32px;line-height:1.6}
+.hero .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.hero .note{font-size:13px;color:var(--faint);margin-top:18px}
+.hero .note b{color:var(--muted);font-weight:600}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+@media (max-width:920px){.hero-grid{grid-template-columns:1fr;gap:20px}.stage{order:-1;margin-bottom:10px}}
 
-/* phone mockup */
-.phone{width:300px;height:610px;border-radius:44px;background:#000;padding:9px;box-shadow:0 0 0 1px rgba(242,240,236,.12),0 50px 110px rgba(0,0,0,.6);transform:rotate(2.5deg)}
-.scr{width:100%;height:100%;border-radius:36px;overflow:hidden;background:radial-gradient(120% 70% at 50% -10%,rgba(201,194,174,.1),transparent 55%),#0d0e12;padding:26px 20px;display:flex;flex-direction:column;gap:14px}
-.scr .brandline{display:flex;justify-content:space-between;align-items:center}
-.scr .bname{font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase}
-.scr .avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(145deg,var(--acc-hi),var(--acc-deep))}
-.scr .greet{font-family:var(--disp);font-weight:300;font-size:21px;text-transform:uppercase;line-height:1.15;margin-top:8px}
-.scr .bookbtn{height:46px;border-radius:15px;background:linear-gradient(145deg,var(--acc-hi),var(--acc-deep));display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:600;font-size:13px;color:var(--acc-ink)}
-.scr .tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.scr .tile{aspect-ratio:1/1;border-radius:14px;background:rgba(242,240,236,.05);border:1px solid var(--line);display:flex;align-items:flex-end;padding:9px;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-family:var(--disp)}
-.scr .rowcard{border-radius:14px;background:rgba(242,240,236,.05);border:1px solid var(--line);padding:12px 13px}
-.scr .rowcard .t{font-size:12px;font-weight:600}
-.scr .rowcard .s{font-size:10px;color:var(--faint);margin-top:3px}
-.chip-float{position:absolute;font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.08em;padding:8px 14px;border-radius:999px;background:rgba(21,23,28,.9);border:1px solid var(--line2);backdrop-filter:blur(8px)}
-@media (max-width:920px){.chip-float{display:none}}
+/* phone stage */
+.stage{position:relative;display:flex;justify-content:center}
+.chip-f{position:absolute;z-index:3;display:inline-flex;align-items:center;gap:7px;font-family:var(--disp);font-weight:600;
+  font-size:12px;padding:9px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line);
+  box-shadow:0 8px 24px oklch(0.4 0.02 70/.10);color:var(--ink)}
+.chip-f .d{width:7px;height:7px;border-radius:50%;background:var(--acc)}
+@media (max-width:920px){.chip-f{display:none}}
+.phone{width:302px;height:616px;border-radius:46px;background:oklch(0.22 0.008 70);padding:9px;
+  box-shadow:0 2px 4px oklch(0.3 0.02 70/.14),0 44px 90px oklch(0.35 0.02 70/.22);position:relative}
+.scr{width:100%;height:100%;border-radius:38px;overflow:hidden;position:relative;
+  background:radial-gradient(120% 60% at 50% -6%,var(--acc-soft),transparent 52%),var(--surface);
+  padding:26px 20px;display:flex;flex-direction:column;gap:14px}
+.scr .top{display:flex;justify-content:space-between;align-items:center}
+.scr .bn{font-family:var(--disp);font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)}
+.scr .av{width:28px;height:28px;border-radius:50%;background:linear-gradient(145deg,var(--acc-soft),var(--acc))}
+.scr .greet{font-family:var(--disp);font-weight:300;font-size:23px;line-height:1.15;letter-spacing:-.01em;margin-top:6px}
+.scr .book{height:48px;border-radius:15px;background:var(--btn);color:var(--btn-ink);display:flex;align-items:center;justify-content:center;
+  font-family:var(--disp);font-weight:600;font-size:13.5px}
+.scr .tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.scr .tile{aspect-ratio:1;border-radius:15px;background:var(--surface-2);border:1px solid var(--line);
+  display:flex;align-items:flex-end;padding:10px;font-family:var(--disp);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.scr .row{border-radius:15px;background:var(--surface-2);border:1px solid var(--line);padding:12px 14px}
+.scr .row .t{font-size:12.5px;font-weight:700;font-family:var(--body)}
+.scr .row .s{font-size:10.5px;color:var(--faint);margin-top:3px}
+.scr .row .s b{color:var(--acc-ink)}
+
+/* logo strip */
+.strip{padding:34px 0 8px;border-top:1px solid var(--line);margin-top:44px}
+.strip .lab{text-align:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-family:var(--disp);font-weight:600;margin-bottom:20px}
+.strip .row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.strip .row span{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--muted);
+  padding:9px 18px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
 
 /* sections */
-section{padding:84px 0}
-.sec-eyebrow{font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:var(--acc);margin-bottom:14px}
-h2{font-family:var(--disp);font-weight:300;font-size:clamp(26px,3.4vw,38px);text-transform:uppercase;letter-spacing:0;line-height:1.15;margin-bottom:16px}
-.lead{color:var(--dim);font-size:15.5px;line-height:1.65;max-width:560px}
+section{padding:90px 0}
+.eyebrow{font-family:var(--disp);font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--acc-text);margin-bottom:14px}
+h2{font-family:var(--disp);font-weight:300;font-size:clamp(28px,3.6vw,44px);line-height:1.1;letter-spacing:-.018em}
+h2 b{font-weight:600}
+.lead-2{color:var(--muted);font-size:17px;line-height:1.6;max-width:52ch;margin-top:16px}
+.sec-head{max-width:640px;margin-bottom:48px}
 
-/* шаги */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:46px}
-@media (max-width:760px){.steps{grid-template-columns:1fr}}
-.step{background:var(--bg1);padding:30px 26px}
-.step .n{font-family:var(--disp);font-weight:200;font-size:34px;color:var(--acc);opacity:.85}
-.step h3{font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.04em;margin:16px 0 10px;text-transform:uppercase}
-.step p{font-size:13.5px;line-height:1.65;color:var(--dim)}
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media (max-width:820px){.steps{grid-template-columns:1fr}}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:30px;transition:border-color .3s,box-shadow .3s}
+.step:hover{border-color:var(--line-2);box-shadow:0 14px 40px oklch(0.4 0.02 70/.06)}
+.step .n{width:38px;height:38px;border-radius:11px;background:var(--acc-soft);color:var(--acc-ink);
+  display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:15px;margin-bottom:18px}
+.step h3{font-family:var(--disp);font-weight:600;font-size:17px;margin-bottom:9px}
+.step p{color:var(--muted);font-size:14.5px;line-height:1.6}
 
 /* bento */
-.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:46px}
-.b{background:var(--bg1);border:1px solid var(--line);border-radius:18px;padding:26px;transition:border-color .3s}
-.b:hover{border-color:var(--line2)}
-.b h3{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.03em;margin-bottom:10px}
-.b p{font-size:13.5px;line-height:1.6;color:var(--dim)}
-.b .tag{display:inline-block;font-family:var(--disp);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);border:1px solid var(--line2);border-radius:999px;padding:4px 10px;margin-bottom:14px}
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
+.b{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:30px;transition:border-color .3s,box-shadow .3s}
+.b:hover{border-color:var(--line-2);box-shadow:0 14px 44px oklch(0.4 0.02 70/.06)}
+.b .tag{display:inline-block;font-family:var(--disp);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--acc-ink);background:var(--acc-soft);border-radius:999px;padding:5px 11px;margin-bottom:16px}
+.b h3{font-family:var(--disp);font-weight:600;font-size:18px;margin-bottom:10px;letter-spacing:-.01em}
+.b p{color:var(--muted);font-size:14.5px;line-height:1.62}
 .b1{grid-column:span 4}.b2{grid-column:span 2}.b3{grid-column:span 2}.b4{grid-column:span 2}.b5{grid-column:span 2}.b6{grid-column:span 3}.b7{grid-column:span 3}
-@media (max-width:860px){.bento{grid-template-columns:1fr 1fr}.b1,.b2,.b3,.b4,.b5,.b6,.b7{grid-column:span 2}}
+@media (max-width:900px){.bento{grid-template-columns:1fr 1fr}.b1,.b2,.b3,.b4,.b5,.b6,.b7{grid-column:span 2}}
+@media (max-width:560px){.bento{grid-template-columns:1fr}.b1,.b2,.b3,.b4,.b5,.b6,.b7{grid-column:span 1}}
 
-/* тарифы */
-.plans{display:grid;grid-template-columns:repeat(2,minmax(0,380px));gap:18px;justify-content:center;margin-top:46px}
-@media (max-width:760px){.plans{grid-template-columns:1fr}}
-.plan{background:var(--bg1);border:1px solid var(--line);border-radius:20px;padding:32px 30px;position:relative}
-.plan.hot{border-color:rgba(201,194,174,.45);box-shadow:0 24px 70px rgba(201,194,174,.07)}
-.plan .pop{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-family:var(--disp);font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:linear-gradient(145deg,var(--acc-hi),var(--acc-deep));color:var(--acc-ink);border-radius:999px;padding:5px 14px}
-.plan h3{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase}
-.plan .price{font-family:var(--disp);font-weight:200;font-size:42px;margin:14px 0 4px}
-.plan .price small{font-size:14px;color:var(--faint);font-family:var(--body)}
-.plan .pd{font-size:12.5px;color:var(--faint);margin-bottom:22px}
-.plan ul{list-style:none;margin-bottom:26px}
-.plan li{font-size:13.5px;color:var(--dim);padding:8px 0;border-bottom:1px solid var(--line);display:flex;gap:10px}
-.plan li::before{content:"—";color:var(--acc)}
+/* white-label interactive */
+.wl{background:var(--surface-2);border-radius:28px;padding:52px;display:grid;grid-template-columns:1fr 340px;gap:44px;align-items:center;border:1px solid var(--line)}
+@media (max-width:860px){.wl{grid-template-columns:1fr;padding:34px}}
+.wl h2{margin-bottom:16px}
+.wl p{color:var(--muted);font-size:16px;line-height:1.6;max-width:44ch}
+.wl .swatches{display:flex;gap:12px;margin-top:26px}
+.wl .sw{width:38px;height:38px;border-radius:11px;cursor:pointer;border:2px solid transparent;box-shadow:0 0 0 1px var(--line);transition:transform .15s,border-color .15s}
+.wl .sw:hover{transform:scale(1.08)}
+.wl .sw.on{border-color:var(--ink)}
+.wl .sw:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.wl-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 20px 60px oklch(0.4 0.02 70/.08)}
+.wl-card .wl-logo{width:44px;height:44px;border-radius:13px;background:var(--wl-acc,var(--acc));display:flex;align-items:center;justify-content:center;
+  font-family:var(--disp);font-weight:700;font-size:20px;color:#fff;transition:background .3s}
+.wl-card .wl-name{font-family:var(--disp);font-weight:600;font-size:15px;margin-top:14px}
+.wl-card .wl-sub{font-size:12.5px;color:var(--faint);margin-top:3px}
+.wl-card .wl-btn{height:42px;border-radius:12px;background:var(--wl-acc,var(--acc));color:#fff;display:flex;align-items:center;justify-content:center;
+  font-family:var(--disp);font-weight:600;font-size:13px;margin-top:18px;transition:background .3s}
+
+/* pricing */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:800px;margin:0 auto}
+@media (max-width:720px){.plans{grid-template-columns:1fr}}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:34px 32px;position:relative}
+.plan.hot{border-color:var(--acc);box-shadow:0 24px 70px oklch(0.64 0.115 66/.12)}
+.plan .pop{position:absolute;top:-12px;left:32px;font-family:var(--disp);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--acc);color:#fff;border-radius:999px;padding:6px 14px}
+.plan h3{font-family:var(--disp);font-weight:600;font-size:16px;letter-spacing:.04em;text-transform:uppercase}
+.plan .price{font-family:var(--disp);font-weight:300;font-size:46px;letter-spacing:-.02em;margin:14px 0 2px}
+.plan .price small{font-size:15px;color:var(--faint);font-family:var(--body);font-weight:500}
+.plan .pd{font-size:13px;color:var(--faint);margin-bottom:24px}
+.plan ul{list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:0}
+.plan li{font-size:14.5px;color:var(--muted);padding:10px 0;border-bottom:1px solid var(--line);display:flex;gap:11px;align-items:flex-start}
 .plan li:last-child{border-bottom:0}
-.addon{max-width:778px;margin:18px auto 0;background:var(--bg1);border:1px dashed var(--line2);border-radius:16px;padding:20px 26px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-.addon .t{font-family:var(--disp);font-weight:600;font-size:14px}
-.addon .d{font-size:13px;color:var(--dim);flex:1;min-width:220px}
-.addon .p{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--acc-hi)}
+.plan li svg{flex-shrink:0;margin-top:2px}
+.addon{max-width:800px;margin:20px auto 0;background:var(--surface);border:1px dashed var(--line-2);border-radius:18px;
+  padding:22px 28px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.addon .t{font-family:var(--disp);font-weight:600;font-size:15px}
+.addon .d{font-size:14px;color:var(--muted);flex:1;min-width:220px;line-height:1.5}
+.addon .p{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--acc-ink)}
 
 /* faq */
-.faq{max-width:720px;margin:46px auto 0}
-.faq details{border-bottom:1px solid var(--line);padding:4px 0}
-.faq summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:18px 4px;font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.02em}
+.faq{max-width:760px;margin:0 auto}
+.faq details{border-bottom:1px solid var(--line);padding:6px 0}
+.faq summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:20px;
+  padding:20px 4px;font-family:var(--disp);font-weight:600;font-size:16px}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::after{content:"+";font-weight:300;font-size:22px;color:var(--acc);transition:transform .3s var(--ease)}
-.faq details[open] summary::after{transform:rotate(45deg)}
-.faq .a{padding:0 4px 20px;font-size:14px;line-height:1.7;color:var(--dim);max-width:600px}
+.faq summary::after{content:"";width:11px;height:11px;flex-shrink:0;border-right:2px solid var(--acc);border-bottom:2px solid var(--acc);
+  transform:rotate(45deg);transition:transform .3s var(--ease);margin-right:6px;margin-bottom:4px}
+.faq details[open] summary::after{transform:rotate(-135deg);margin-bottom:0}
+.faq .a{padding:0 4px 22px;font-size:15px;line-height:1.7;color:var(--muted);max-width:620px}
 
-/* финал */
-.final{text-align:center;padding:100px 0 110px;position:relative;overflow:hidden}
-.final::before{content:"";position:absolute;inset:auto -20% -60%;height:120%;background:radial-gradient(50% 50% at 50% 100%,rgba(201,194,174,.12),transparent 70%);pointer-events:none}
-.final .wrap{position:relative}
-footer{border-top:1px solid var(--line);padding:30px 0;color:var(--faint);font-size:12px}
-footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+/* final */
+.final{text-align:center;position:relative;overflow:hidden}
+.final::before{content:"";position:absolute;left:50%;bottom:-160px;width:820px;height:420px;transform:translateX(-50%);
+  background:radial-gradient(50% 60% at 50% 50%,var(--acc-soft),transparent 68%);opacity:.75;pointer-events:none}
+.final .wrap{position:relative;z-index:1}
+.final h2{max-width:18ch;margin:0 auto}
+.final .cta-row{display:flex;gap:14px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+
+footer{border-top:1px solid var(--line);padding:40px 0;color:var(--faint);font-size:13.5px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+footer .logo{color:var(--muted)}
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="wrap">
-    <a class="logo" href="#">MA<b>Y</b>A</a>
+<header class="topbar" id="topbar">
+  <div class="wrap nav">
+    <a class="logo" href="#top">MA<span class="dot"></span>YA</a>
     <div class="links">
       <a href="#how">Как работает</a>
-      <a href="#feat">Возможности</a>
-      <a href="#plans">Тарифы</a>
+      <a href="#features">Возможности</a>
+      <a href="#pricing">Тарифы</a>
       <a href="#faq">Вопросы</a>
     </div>
-    <a class="cta" href="/maya-start.html">Попробовать</a>
-  </div>
-</nav>
-
-<header class="hero">
-  <div class="wrap">
-    <div>
-      <div class="eyebrow rv">Платформа для салонов и барбершопов</div>
-      <h1 class="rv">Приложение вашего салона.<br><b>Под вашим брендом.</b></h1>
-      <p class="rv">Онлайн-запись, баллы лояльности и AI-администратор Майя — в приложении, которое вы собираете за вечер. Ваш логотип, ваши цвета, ваши тексты. Без разработчиков.</p>
-      <div class="btns rv">
-        <a class="cta big" href="/maya-start.html">Попробовать бесплатно</a>
-        <a class="ghost" href="/app.html?booking_backend=saas-local&booking_tenant=demo-salon" target="_blank" rel="noopener">Живое демо</a>
-      </div>
-      <div class="trial-note rv">14 дней бесплатно · карта не нужна · подключается к вашей CRM</div>
-    </div>
-    <div class="phone-col" style="position:relative">
-      <div class="chip-float" style="top:6%;left:-14%">Ваш логотип</div>
-      <div class="chip-float" style="top:38%;right:-16%">Ваши цвета</div>
-      <div class="chip-float" style="bottom:16%;left:-18%">Ваши тексты</div>
-      <div class="phone rv">
-        <div class="scr">
-          <div class="brandline"><span class="bname">Ваш салон</span><span class="avatar"></span></div>
-          <div class="greet">Место,<br>куда хочется<br>возвращаться</div>
-          <div class="bookbtn">Записаться</div>
-          <div class="tiles"><div class="tile">Кабинет</div><div class="tile">Магазин</div><div class="tile">Друзья</div></div>
-          <div class="rowcard"><div class="t">Стрижка · 40 мин</div><div class="s">от 1 500 ₽</div></div>
-          <div class="rowcard"><div class="t">Баллы лояльности</div><div class="s">кэшбэк с каждого визита</div></div>
-        </div>
-      </div>
+    <div class="end">
+      <a class="signin" href="/maya-admin.html">Войти</a>
+      <a class="btn" href="/maya-start.html">Попробовать</a>
     </div>
   </div>
 </header>
 
-<section id="how">
-  <div class="wrap">
-    <div class="sec-eyebrow rv">Как это работает</div>
-    <h2 class="rv">Три шага до собственного приложения</h2>
-    <div class="steps">
-      <div class="step rv"><div class="n">01</div><h3>Зарегистрируйтесь</h3><p>Название и адрес — салон создаётся сразу, в бесплатном триале. Никаких договоров на этом шаге.</p></div>
-      <div class="step rv"><div class="n">02</div><h3>Соберите бренд</h3><p>Логотип, цвета, тексты и подключение вашей CRM — в конструкторе с живым превью. Меняете поле — видите результат.</p></div>
-      <div class="step rv"><div class="n">03</div><h3>Поделитесь ссылкой</h3><p>Клиенты открывают приложение по ссылке или QR-коду, ставят на главный экран и записываются сами.</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="feat" style="background:var(--bg1);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
-  <div class="wrap">
-    <div class="sec-eyebrow rv">Возможности</div>
-    <h2 class="rv">Всё, чем живёт салон — в одном месте</h2>
-    <div class="bento">
-      <div class="b b1 rv" style="background:var(--bg2)"><span class="tag">Ядро</span><h3>Онлайн-запись из вашей CRM</h3><p>Мастера, услуги, цены и свободные слоты подтягиваются из YClients и других систем записи. Клиент выбирает время — запись падает к вам, как обычно. Ничего не переносится вручную.</p></div>
-      <div class="b b2 rv"><span class="tag">White-label</span><h3>Ваш бренд</h3><p>Логотип, цвета, тексты и слоганы — приложение выглядит вашим, а не «сервисом с чужим именем».</p></div>
-      <div class="b b3 rv"><span class="tag">Доп</span><h3>Майя · AI-администратор</h3><p>Отвечает клиентам в чате, подбирает время и записывает — днём и ночью, без выходных.</p></div>
-      <div class="b b4 rv"><h3>Лояльность</h3><p>Баллы и кэшбэк с визитов — повод вернуться именно к вам, а не «куда ближе».</p></div>
-      <div class="b b5 rv"><h3>Кабинет клиента</h3><p>Предстоящие визиты, история и профиль — клиент управляет записями сам.</p></div>
-      <div class="b b6 rv"><h3>Аналитика владельцу</h3><p>Выручка, загрузка, возвращаемость — цифры салона без выгрузок и таблиц.</p></div>
-      <div class="b b7 rv"><h3>Журнал и команда</h3><p>Расписание дня, записи мастеров и внутренний чат команды — на тарифе «Салон».</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="plans">
-  <div class="wrap">
-    <div class="sec-eyebrow rv">Тарифы</div>
-    <h2 class="rv">Честная цена. Без внедрений и процентов</h2>
-    <p class="lead rv">Триал 14 дней на любом тарифе. Отменить можно в один клик — приложение останется у клиентов до конца оплаченного периода.</p>
-    <div class="plans">
-      <div class="plan rv">
-        <h3>Запись</h3>
-        <div class="price">990 <small>₽ / мес</small></div>
-        <div class="pd">старт для небольшого салона · до 5 мастеров</div>
-        <ul>
-          <li>Онлайн-запись из вашей CRM</li>
-          <li>Приложение под вашим брендом</li>
-          <li>Баллы лояльности</li>
-          <li>Уведомления о записи в Telegram</li>
-        </ul>
-        <a class="cta" style="width:100%" href="/maya-start.html">Начать бесплатно</a>
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <span class="pill rv"><b>14 дней бесплатно</b> · карта не нужна</span>
+          <h1 class="rv d1">Приложение вашего салона. <b>Под вашим брендом.</b></h1>
+          <p class="lead rv d2">Онлайн-запись, баллы лояльности и AI-администратор Майя — в приложении, которое вы собираете за вечер. Ваш логотип, ваши цвета, ваши тексты. Без разработчиков и App Store.</p>
+          <div class="cta-row rv d2">
+            <a class="btn lg" href="/maya-start.html">Создать салон бесплатно</a>
+            <a class="btn lg ghost" href="/app.html?booking_backend=saas-local&booking_tenant=demo-salon" target="_blank" rel="noopener">Живое демо →</a>
+          </div>
+          <p class="note rv d3"><b>Подключается к вашей CRM</b> · YClients, Altegio и другие</p>
+        </div>
+        <div class="stage rv d1">
+          <span class="chip-f" style="top:8%;left:-6%"><span class="d"></span>Ваш логотип</span>
+          <span class="chip-f" style="top:44%;right:-8%"><span class="d"></span>Ваши цвета</span>
+          <span class="chip-f" style="bottom:12%;left:-4%"><span class="d"></span>Ваши тексты</span>
+          <div class="phone">
+            <div class="scr">
+              <div class="top"><span class="bn">Ваш салон</span><span class="av"></span></div>
+              <div class="greet">Место,<br>куда хочется<br>возвращаться</div>
+              <div class="book">Записаться</div>
+              <div class="tiles"><div class="tile">Кабинет</div><div class="tile">Магазин</div><div class="tile">Друзья</div></div>
+              <div class="row"><div class="t">Стрижка · 40 мин</div><div class="s">от 1 500 ₽</div></div>
+              <div class="row"><div class="t">Баллы лояльности</div><div class="s"><b>5%</b> кэшбэк с каждого визита</div></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="plan hot rv">
-        <div class="pop">Популярный</div>
-        <h3>Салон</h3>
-        <div class="price">2 490 <small>₽ / мес</small></div>
-        <div class="pd">всё для работы салона · мастера без лимита</div>
-        <ul>
-          <li>Всё из тарифа «Запись»</li>
-          <li>Журнал: расписание, перенос, статусы</li>
-          <li>Кабинет сотрудника и чат команды</li>
-          <li>Рассылки, напоминания, реактивация</li>
-          <li>Аналитика: выручка, зарплаты, отчёты</li>
-          <li>Магазин: сертификаты и абонементы</li>
-        </ul>
-        <a class="cta" style="width:100%" href="/maya-start.html">Начать бесплатно</a>
+
+      <div class="strip rv">
+        <div class="lab">Работает с вашей системой записи</div>
+        <div class="row"><span>YClients</span><span>Altegio</span><span>DIKIDI</span><span>Telegram</span><span>ЮKassa</span></div>
       </div>
     </div>
-    <div class="addon rv">
-      <span class="t">Майя · AI-администратор</span>
-      <span class="d">Умный чат-бот: отвечает клиентам, записывает и делает апсейл. Подключается к любому тарифу.</span>
-      <span class="p">+ 1 990 ₽ / мес</span>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section id="faq" style="background:var(--bg1);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
-  <div class="wrap">
-    <div class="sec-eyebrow rv">Вопросы</div>
-    <h2 class="rv">Коротко о главном</h2>
-    <div class="faq rv">
-      <details>
-        <summary>Подключится ли мой YClients?</summary>
-        <div class="a">Да. Вставляете API-токен и номер компании в конструкторе — мастера, услуги и свободное время подтягиваются автоматически. Записи падают в YClients, как будто их создал администратор. Поддержим и другие CRM.</div>
-      </details>
-      <details>
-        <summary>Это приложение или сайт?</summary>
-        <div class="a">Веб-приложение (PWA): открывается по ссылке или QR, ставится на главный экран телефона как обычное приложение — без App Store и Google Play, без модерации и ожиданий.</div>
-      </details>
-      <details>
-        <summary>Где хранятся данные клиентов?</summary>
-        <div class="a">В России, в зашифрованном виде, в соответствии со 152-ФЗ. Персональные данные ваших клиентов не передаются третьим лицам и не используются для обучения нейросетей.</div>
-      </details>
-      <details>
-        <summary>Сколько времени занимает запуск?</summary>
-        <div class="a">Один вечер. Регистрация — минута, бренд и тексты — полчаса в конструкторе с живым превью, подключение CRM — пара минут с токеном. Дальше — раздать ссылку клиентам.</div>
-      </details>
+  <section id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow rv">Как это работает</div>
+        <h2 class="rv d1">Три шага до <b>собственного приложения</b></h2>
+        <p class="lead-2 rv d2">Никаких договоров и внедрений на старте. Регистрируетесь, собираете бренд, делитесь ссылкой.</p>
+      </div>
+      <div class="steps">
+        <div class="step rv"><div class="n">1</div><h3>Зарегистрируйтесь</h3><p>Название и адрес — салон создаётся сразу, в бесплатном триале. Минута, без карты.</p></div>
+        <div class="step rv d1"><div class="n">2</div><h3>Соберите бренд</h3><p>Логотип, цвета, тексты и подключение вашей CRM — в конструкторе с живым превью. Меняете поле — видите результат.</p></div>
+        <div class="step rv d2"><div class="n">3</div><h3>Поделитесь ссылкой</h3><p>Клиенты открывают приложение по ссылке или QR, ставят на главный экран и записываются сами.</p></div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="final">
-  <div class="wrap">
-    <div class="sec-eyebrow rv">Начните сегодня</div>
-    <h2 class="rv">Ваши клиенты уже носят телефон.<br>Дайте им ваше приложение.</h2>
-    <div style="margin-top:34px" class="rv"><a class="cta big" href="/maya-start.html">Попробовать бесплатно</a></div>
-    <div class="trial-note rv">14 дней · карта не нужна</div>
-  </div>
-</section>
+  <section id="features" style="padding-top:20px">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow rv">Возможности</div>
+        <h2 class="rv d1">Всё, чем живёт салон — <b>в одном приложении</b></h2>
+      </div>
+      <div class="bento">
+        <div class="b b1 rv"><span class="tag">Ядро</span><h3>Онлайн-запись из вашей CRM</h3><p>Мастера, услуги, цены и свободные слоты подтягиваются из YClients и других систем записи. Клиент выбирает время — запись падает к вам, как обычно. Ничего не переносится вручную, ничего не дублируется.</p></div>
+        <div class="b b2 rv d1"><span class="tag">White-label</span><h3>Ваш бренд</h3><p>Логотип, цвета, тексты и слоганы — приложение выглядит вашим, а не «сервисом с чужим именем».</p></div>
+        <div class="b b3 rv"><span class="tag">Доп</span><h3>Майя · AI-администратор</h3><p>Отвечает клиентам в чате, подбирает время и записывает — днём и ночью, без выходных.</p></div>
+        <div class="b b4 rv d1"><h3>Лояльность</h3><p>Баллы и кэшбэк с визитов — повод вернуться именно к вам, а не «куда ближе».</p></div>
+        <div class="b b5 rv d2"><h3>Кабинет клиента</h3><p>Записи, история, отмена и перенос — клиент управляет визитами сам, без звонков.</p></div>
+        <div class="b b6 rv"><h3>Аналитика владельцу</h3><p>Выручка, загрузка, возвращаемость — цифры салона без выгрузок и таблиц.</p></div>
+        <div class="b b7 rv d1"><h3>Журнал и команда</h3><p>Расписание дня, записи мастеров и внутренний чат команды — на тарифе «Салон».</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:20px">
+    <div class="wrap">
+      <div class="wl rv">
+        <div>
+          <div class="eyebrow">Живой white-label</div>
+          <h2>Один бренд — <b>одно касание</b></h2>
+          <p>Выберите цвет — и приложение справа переоденется прямо сейчас. Именно так владелец настраивает свой салон в конструкторе: без кода, с мгновенным превью.</p>
+          <div class="swatches" id="swatches" role="group" aria-label="Выбор акцентного цвета">
+            <button class="sw on" style="background:oklch(0.64 0.115 66)" data-c="oklch(0.64 0.115 66)" data-i="Г" aria-label="Латунь"></button>
+            <button class="sw" style="background:oklch(0.58 0.13 250)" data-c="oklch(0.58 0.13 250)" data-i="М" aria-label="Синий"></button>
+            <button class="sw" style="background:oklch(0.6 0.15 150)" data-c="oklch(0.6 0.15 150)" data-i="В" aria-label="Зелёный"></button>
+            <button class="sw" style="background:oklch(0.58 0.19 12)" data-c="oklch(0.58 0.19 12)" data-i="П" aria-label="Красный"></button>
+            <button class="sw" style="background:oklch(0.55 0.16 300)" data-c="oklch(0.55 0.16 300)" data-i="Б" aria-label="Фиолетовый"></button>
+          </div>
+        </div>
+        <div class="wl-card" id="wlCard">
+          <div class="wl-logo" id="wlLogo">Г</div>
+          <div class="wl-name">Барбершоп «Грива»</div>
+          <div class="wl-sub">приложение вашего салона</div>
+          <div class="wl-btn">Записаться</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="wrap">
+      <div class="sec-head" style="text-align:center;margin:0 auto 48px">
+        <div class="eyebrow rv">Тарифы</div>
+        <h2 class="rv d1">Честная цена. <b>Без внедрений и процентов</b></h2>
+        <p class="lead-2 rv d2" style="margin-left:auto;margin-right:auto">Триал 14 дней на любом тарифе. Отменить — в один клик, приложение останется у клиентов до конца оплаченного периода.</p>
+      </div>
+      <div class="plans">
+        <div class="plan rv">
+          <h3>Запись</h3>
+          <div class="price">990 <small>₽ / мес</small></div>
+          <div class="pd">старт для небольшого салона · до 5 мастеров</div>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(0.64 0.115 66)" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>Онлайн-запись из вашей CRM</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(0.64 0.115 66)" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>Приложение под вашим брендом</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(0.64 0.115 66)" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>Баллы лояльности</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(0.64 0.115 66)" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>Уведомления о записи в Telegram</li>
+          </ul>
+          <a class="btn ghost" style="width:100%" href="/maya-start.html">Начать бесплатно</a>
+        </div>
+        <div class="plan hot rv d1">
+          <span class="pop">Популярный</span>
+          <h3>Салон</h3>
+          <div class="price">2 490 <small>₽ / мес</small></div>
+          <div class="pd">всё для работы салона · мастера без лимита</div>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(0.64 0.115 66)" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>Всё из тарифа «Запись»</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(0.64 0.115 66)" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>Журнал: расписание, перенос, статусы</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(0.64 0.115 66)" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>Кабинет сотрудника и чат команды</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(0.64 0.115 66)" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>Рассылки, напоминания, реактивация</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(0.64 0.115 66)" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>Аналитика: выручка, зарплаты, отчёты</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(0.64 0.115 66)" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>Магазин: сертификаты и абонементы</li>
+          </ul>
+          <a class="btn" style="width:100%" href="/maya-start.html">Начать бесплатно</a>
+        </div>
+      </div>
+      <div class="addon rv">
+        <span class="t">Майя · AI-администратор</span>
+        <span class="d">Умный чат-бот: отвечает клиентам, записывает и делает апсейл. Подключается к любому тарифу.</span>
+        <span class="p">+ 1 990 ₽ / мес</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="sec-head" style="text-align:center;margin:0 auto 44px">
+        <div class="eyebrow rv">Вопросы</div>
+        <h2 class="rv d1">Коротко о главном</h2>
+      </div>
+      <div class="faq rv">
+        <details><summary>Подключится ли мой YClients?</summary><div class="a">Да. Вставляете API-токен и номер компании в конструкторе — мастера, услуги и свободное время подтягиваются автоматически. Записи создаются в YClients, как будто их сделал администратор. Поддержим Altegio, DIKIDI и другие системы.</div></details>
+        <details><summary>Это приложение или сайт?</summary><div class="a">Веб-приложение (PWA): открывается по ссылке или QR, ставится на главный экран телефона как обычное приложение — без App Store и Google Play, без модерации и ожиданий обновлений.</div></details>
+        <details><summary>Где хранятся данные клиентов?</summary><div class="a">В России, в зашифрованном виде, в соответствии со 152-ФЗ. Персональные данные ваших клиентов не передаются третьим лицам и не используются для обучения нейросетей.</div></details>
+        <details><summary>Сколько времени занимает запуск?</summary><div class="a">Один вечер. Регистрация — минута, бренд и тексты — полчаса в конструкторе с живым превью, подключение CRM — пара минут с токеном. Дальше остаётся раздать ссылку клиентам.</div></details>
+        <details><summary>Что будет, когда я отменю подписку?</summary><div class="a">Приложение продолжит работать до конца оплаченного периода. Никаких блокировок «в тот же день» и штрафов — отмена в один клик из админки.</div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <div class="eyebrow rv">Начните сегодня</div>
+      <h2 class="rv d1">Ваши клиенты уже носят телефон. <b>Дайте им ваше приложение.</b></h2>
+      <div class="cta-row rv d2">
+        <a class="btn lg" href="/maya-start.html">Создать салон бесплатно</a>
+        <a class="btn lg ghost" href="/app.html?booking_backend=saas-local&booking_tenant=demo-salon" target="_blank" rel="noopener">Живое демо →</a>
+      </div>
+      <p class="note rv d2" style="color:var(--faint);margin-top:18px;font-size:13px">14 дней · карта не нужна · подключается к вашей CRM</p>
+    </div>
+  </section>
+</main>
 
 <footer>
   <div class="wrap">
-    <span>MAYA · платформа для салонов</span>
-    <span>Сделано в России · 152-ФЗ</span>
+    <a class="logo" href="#top">MA<span class="dot"></span>YA</a>
+    <span>Платформа для салонов и барбершопов · Сделано в России · 152-ФЗ</span>
   </div>
 </footer>
 
 <script>
 (function () {
   'use strict';
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-    });
-  }, { threshold: 0.12 });
+  // reveal on scroll
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' });
   document.querySelectorAll('.rv').forEach(function (el) { io.observe(el); });
+
+  // nav border on scroll
+  var tb = document.getElementById('topbar');
+  var onScroll = function () { tb.classList.toggle('scrolled', window.scrollY > 8); };
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  // white-label live swatch
+  var card = document.getElementById('wlCard'), logo = document.getElementById('wlLogo');
+  document.querySelectorAll('#swatches .sw').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('#swatches .sw').forEach(function (x) { x.classList.toggle('on', x === b); });
+      card.style.setProperty('--wl-acc', b.getAttribute('data-c'));
+      logo.textContent = b.getAttribute('data-i');
+    });
+  });
 })();
 </script>
 </body>
