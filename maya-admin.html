@@ -154,7 +154,19 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
       <div class="card">
         <h2>Айдентика</h2>
         <div class="field"><label>Название приложения</label><input id="b-name" placeholder="Название салона"></div>
-        <div class="field"><label>Логотип · URL</label><input id="b-logo" placeholder="https://…/logo.png"><div class="hint">PNG или SVG на прозрачном фоне. Загрузку файлом добавим позже.</div></div>
+        <div class="field">
+          <label>Логотип</label>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div id="b-logo-thumb" style="width:56px;height:56px;border-radius:12px;border:1px solid var(--line);background:var(--bg2) center/contain no-repeat;flex-shrink:0"></div>
+            <div style="flex:1">
+              <input type="file" id="b-logo-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none">
+              <button type="button" class="btn ghost" id="b-logo-pick" style="height:40px">Загрузить файл</button>
+              <div class="hint" style="margin-top:6px">PNG / JPEG / WEBP / GIF, до 2 МБ. SVG не принимается.</div>
+            </div>
+          </div>
+          <details style="margin-top:12px"><summary style="cursor:pointer;font-size:11.5px;color:var(--faint)">или указать URL вручную</summary>
+            <input id="b-logo" placeholder="https://…/logo.png" style="margin-top:8px"></details>
+        </div>
         <div class="row2">
           <div class="field"><label>Основной цвет</label><div class="colorbox"><input type="color" id="b-c1c" value="#c2c0b8"><input id="b-c1" placeholder="#c2c0b8"></div></div>
           <div class="field"><label>Дополнительный</label><div class="colorbox"><input type="color" id="b-c2c" value="#9d9b93"><input id="b-c2" placeholder="#9d9b93"></div></div>
@@ -524,6 +536,7 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
     /* бренд */
     $('b-name').value = b.app_name || '';
     $('b-logo').value = b.logo_url || '';
+    setLogoThumb(b.logo_url || '');
     setColor('b-c1', b.primary_color || '');
     setColor('b-c2', b.secondary_color || '');
     $('b-rad').value = b.button_radius != null ? b.button_radius : '';
@@ -601,6 +614,36 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
   ['b-c1', 'b-c2'].forEach(function (id) {
     $(id + 'c').addEventListener('input', function () { $(id).value = this.value; });
     $(id).addEventListener('input', function () { if (/^#[0-9a-fA-F]{6}$/.test(this.value)) $(id + 'c').value = this.value; });
+  });
+  $('b-logo-pick').addEventListener('click', function () { $('b-logo-file').click(); });
+  $('b-logo-file').addEventListener('change', async function () {
+    var file = this.files && this.files[0];
+    this.value = '';
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) return toast('Файл больше 2 МБ', 'err');
+    var fd = new FormData(); fd.append('file', file);
+    var btn = $('b-logo-pick'); busy(btn, true, 'Загружаю…');
+    try {
+      var r = await fetch(API + '/admin/tenants/' + S.tid + '/logo', {
+        method: 'POST', headers: { Authorization: 'Bearer ' + S.token }, body: fd
+      });
+      var text = await r.text(); var data = null;
+      try { data = text ? JSON.parse(text) : null; } catch (e) {}
+      if (!r.ok) {
+        var code = data && data.error && data.error.code;
+        var msg = { logo_file_required: 'Выберите файл логотипа.',
+                    logo_file_too_large: 'Файл больше 2 МБ.',
+                    logo_file_type_unsupported: 'Нужен PNG, JPEG, WEBP или GIF (не SVG).' }[code]
+                  || (data && (data.message || (data.error && data.error.message))) || ('HTTP ' + r.status);
+        throw new Error(msg);
+      }
+      var url = data && data.logo_url;
+      $('b-logo').value = url || '';
+      setLogoThumb(url || '');
+      toast('Логотип загружен', 'ok');
+      reloadPreview();
+    } catch (e) { toast(e.message, 'err'); }
+    finally { busy(btn, false); }
   });
   $('b-save').addEventListener('click', async function () {
     var body = {};
@@ -789,6 +832,15 @@ label{display:block;font-family:var(--disp);font-size:10px;font-weight:600;lette
   });
 
   /* ── превью ── */
+  function absLogo(u) {
+    if (!u) return '';
+    if (/^(https?:|data:)/.test(u)) return u;
+    try { return new URL(API).origin + u; } catch (e) { return u; }
+  }
+  function setLogoThumb(u) {
+    var el = $('b-logo-thumb');
+    if (el) el.style.backgroundImage = u ? "url('" + absLogo(u).replace(/'/g, "%27") + "')" : 'none';
+  }
   function previewUrl() {
     var slug = S.tenant && S.tenant.slug;
     return APP + '?booking_backend=saas-local&booking_api_base=' + encodeURIComponent(API) + '&booking_tenant=' + encodeURIComponent(slug || '');

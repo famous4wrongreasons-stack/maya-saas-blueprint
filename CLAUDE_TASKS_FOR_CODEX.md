@@ -29,10 +29,8 @@
 ### ~~3b. Биллинг: реальная оплата~~ · ✅ BACKEND ЗАКРЫТ 2026-07-05
 (бэк Codex: YooKassa checkout, webhook, сохранение payment_method, recurring-charge endpoint, run-due/past_due; UI-пакет для Claude: `CLAUDE_YOOKASSA_BILLING_PACKET.md`)
 
-### 4. Upload логотипа файлом · non-blocking
-- Endpoint: нет (`POST /admin/tenants/:id/logo`?)
-- Current: в админке поле URL
-- Desired: multipart-загрузка + отдача статики; фронт добавит file-input
+### ~~4. Upload логотипа файлом~~ · ✅ ЗАКРЫТО 2026-07-06
+(бэк Codex + UI Claude: file-input в «Бренде», миниатюра, абсолютизация logo_url в клиент-boot; smoke зелёный)
 
 ### 5. Деплой NestJS-бэка + поддомены салонов · blocking для реальных клиентов
 - Current: всё на localhost:3000
